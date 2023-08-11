@@ -1,0 +1,28 @@
+.clickable:not([disabled]) {
+    --range: var(--custom-clickable-range, 1%);
+    @apply transition-all duration-150 ease-in scale-100 hover:scale-[calc(100%+var(--range))];
+    &:active,
+    &.enable-clickable {
+        @apply scale-[calc(100%-var(--range))];
+    }
+}
+
+.hoverable {
+    @apply overflow-hidden;
+    &::after {
+        @apply rounded-[inherit] -z-10 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-current scale-75 transition-all duration-150 content-['_'] opacity-0;
+    }
+    &:hover::after,
+    &.enable-hoverable::after {
+        @apply opacity-[10%] scale-100 bg-[var(--custom-hoverable-bg,currentColor)] shadow-current;
+    }
+}
+
+.hideable-scrollbar-wrapper {
+    & ::-webkit-scrollbar-thumb {
+        visibility: hidden;
+    }
+    &:hover ::-webkit-scrollbar-thumb {
+        visibility: visible;
+    }
+}
