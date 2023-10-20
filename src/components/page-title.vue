@@ -17,7 +17,8 @@
 import { useMeta } from	'vue-meta';
 import {
     type ComputedRef,
-    computed
+    computed,
+    watch,
 } from 'vue';
 
 const props = withDefaults(defineProps<{
@@ -46,6 +47,10 @@ const computedMeta: ComputedRef<Meta> = computed(() => {
     return meta as Meta;
 });
 
-useMeta(computedMeta.value);
+const metaInstance = useMeta(computedMeta.value);
+
+watch(() => props.title, () => {
+    metaInstance.meta.title = props.title.html2text();
+});
 
 </script>

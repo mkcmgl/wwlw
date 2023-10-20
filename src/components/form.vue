@@ -56,7 +56,7 @@ provide('destroyColumn', destroyColumn);
 
 const refresh = () => {
     Object.values(columns.value).forEach((column) => {
-        column.refresh();
+        column?.refresh();
     });
 };
 
@@ -65,7 +65,7 @@ const validate = () => {
 
     Object.values(columns.value).forEach((column) => {
         // 不 break 是为了让所有的 column 都执行一次 manualValidate
-        isValid = column.manualValidate() && isValid;
+        isValid = column?.manualValidate() && isValid;
     });
 
     return isValid;

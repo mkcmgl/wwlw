@@ -10,7 +10,7 @@
 
         input[type="checkbox"] + label .checkbox {
             &::after {
-                @apply h-[10px] w-[5px] absolute left-[5px] top-[1px] border-b-2 border-r-2 border-blue-600 block rotate-45 scale-50 opacity-0 transition-[transform,opacity] duration-100;
+                @apply h-[10px] w-[5px] absolute left-[4.5px] top-[1px] border-b-2 border-r-2 border-blue-600 block rotate-45 scale-50 opacity-0 transition-[transform,opacity] duration-100;
                 content: ' ';
             }
         }
@@ -89,7 +89,7 @@ defineOptions({
 
 const props = withDefaults(defineProps<{
     modelValue: boolean;
-    placeholder: string;
+    placeholder?: string;
     theme?: string;
 }>(), {
     theme: 'default',

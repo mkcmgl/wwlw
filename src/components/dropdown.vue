@@ -73,7 +73,8 @@
                 </div>
 
                 <slot
-                    :close="closeDropdown"/>
+                    :close="closeDropdown"
+                    :is-show-dropdown="isShowDropdown"/>
             </div>
 
         </transition>
@@ -175,6 +176,10 @@ const closeDropdown = () => {
 
 onBeforeMount(() => {
     clickoutsideObserver? clickoutsideObserver() : null;
+});
+
+defineExpose({
+    isShowDropdown
 });
 
 </script>

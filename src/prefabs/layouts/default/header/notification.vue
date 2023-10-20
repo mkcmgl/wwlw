@@ -26,6 +26,7 @@
             select-none
         ">
         <dropdown
+            ref="dropdown"
             class="
                 flex items-center
                 p-2
@@ -67,15 +68,26 @@
             </template>
 
             <template
-                v-slot="{ close }">
+                v-slot="{
+                    close
+                }">
+                <notification-list/>
 
-                <div
+                <footer
                     class="
-                        p-4
+                        p-4 flex justify-end
                     ">
-
-                </div>
-
+                    <router-link
+                        @click="close"
+                        class="
+                            text-xs bg-blue-500 p-2 rounded text-white
+                        "
+                        :to="{
+                            name: 'digital-identities/messages'
+                        }">
+                        查看全部
+                    </router-link>
+                </footer>
             </template>
 
         </dropdown>
@@ -83,15 +95,21 @@
         
     </span>
 
+    
+
 </template>
 
 <script lang="ts" setup>
 
 import __BELL_LOGO__ from '~/assets/images/bell.svg';
 
+import NotificationList from './notification-list.vue';
+
 import {
     defineAsyncComponent,
     ref,
+    onMounted,
+    onUnmounted,
 } from 'vue';
 
 const Dropdown = defineAsyncComponent(
@@ -100,6 +118,32 @@ const Dropdown = defineAsyncComponent(
     )
 );
 
-const notificationCount = ref(2);
+const notificationCount = ref(0);
+
+
+import axios from '~/plugins/axios';
+
+const getUnreadNotificationCount = () => {
+    axios.get(`/notify-message/get-unread-count`)
+        .then(({ data }) => {
+            notificationCount.value = data.data as number;
+        });
+};
+
+let getUnreadNotificationCountInterval;
+
+onMounted(() => {
+    getUnreadNotificationCountInterval = setInterval(
+        getUnreadNotificationCount,
+        1000 * 30 // 30s
+    );
+
+    getUnreadNotificationCount();
+});
+
+onUnmounted(() => {
+    getUnreadNotificationCountInterval && clearInterval(getUnreadNotificationCountInterval);
+});
+
 
 </script>

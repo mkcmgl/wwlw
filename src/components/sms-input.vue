@@ -44,16 +44,17 @@
 
 
         </div>
-        <button class="
-        absolute cursor-pointer z-20 block w-32 h-12 right-0 bottom-2 rounded-sm overflow-hidden transition text-sm tracking-widest  rounded-lg
-        bg-blue-500/95 text-slate-100 hover:bg-blue-500 scale-100 active:scale-[99%] hover:scale-[101%]
-
-                 sms-input-button
-                " 
-                 type="button" >
-                获取验证码
+        <button @click="sendSms" :disabled="loading || countdown !== 0" v-wave="!loading && countdown === 0" type="button"
+            class="absolute cursor-pointer z-20 block w-32 h-[calc(theme('space.10')+2px)] right-0 top-1 rounded overflow-hidden transition text-sm tracking-widest"
+            :class="[
+                {
+                    'bg-blue-500 text-white hover:bg-blue-700 scale-100 active:scale-[99%] hover:scale-[101%]': !loading && countdown === 0,
+                    'bg-slate-200 text-slate-400 cursor-not-allowed': loading || countdown > 0
+                }
+            ]">
+            {{ buttonContent }}
         </button>
-        
+
 
 
         <p class="
@@ -83,6 +84,8 @@ import {
     computed,
     useSlots,
 } from 'vue';
+import { notify } from '@kyvg/vue3-notification';
+import axios from '~/plugins/axios';
 
 defineOptions({
     inheritAttrs: false,
@@ -92,7 +95,14 @@ defineOptions({
 const props = withDefaults(defineProps<
     InputProps & {
         type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search';
-        theme?: string
+        theme?: string;
+        modelValue?: string;
+        scene?: string;
+        uuid?: string;
+        mobile?: string;
+        imgCode?: string;
+        captchaInput?: any;
+        phoneInput?: any;
     }
 >(), {
     rules: () => [],
@@ -100,12 +110,12 @@ const props = withDefaults(defineProps<
     type: 'text',
     theme: 'default',
 });
-
+import encrypt from '~/utils/encrypt';
 const emits = defineEmits([
     'update:modelValue',
     'update:error',
 ]);
-
+const loading = ref(false);
 const {
     id,
     refresh,
@@ -140,7 +150,55 @@ const slots = useSlots();
 const hasIcon = computed(() => !!slots.icon);
 
 defineExpose({
-    refresh
+    refresh,
+    validate
 });
+
+
+const countdown = ref(0);
+const buttonContent = computed(() => {
+    if (countdown.value > 0) {
+        return `${countdown.value} 秒后重试`;
+    }
+    return '获取验证码';
+});
+const sendSms = () => {
+
+    let [phoneError, captchaError] = [props.phoneInput.manualValidate(), props.captchaInput.manualValidate()];
+    if (phoneError && captchaError) {
+        loading.value = true;
+        axios.post(
+            '/auth/send-sms-code', { mobile: encrypt(props.mobile as string), scene: props.scene, uuid: props.uuid, imgCode: props.imgCode }
+        ).then(({ data }) => {
+            if (data.code == 0) {
+                notify({
+                    type: 'success',
+                    text: '短信发送成功，1 分钟内有效',
+                });
+                countdown.value = 60;
+
+                let timer = setInterval(() => {
+                    countdown.value--;
+                    if (countdown.value === 0) {
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            } else {
+                notify({
+                    type: 'error',
+                    text: `短信发送失败：${data.msg}`,
+                });
+                throw new Error(data.msg);
+            }
+
+        }).catch(() => {
+            props.captchaInput.getCaptcha();
+            props.captchaInput.refresh();
+        }).finally(() => {
+            loading.value = false;
+        });
+    }
+
+};
 
 </script>

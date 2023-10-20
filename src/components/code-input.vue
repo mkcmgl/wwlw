@@ -44,10 +44,10 @@
 
 
         </div>
-        <button class="
+        <button @click="getCaptcha" class="
                     code-input-button
-                " type="button" title="看不清，换一张">
-            <img class="w-full h-full" alt="图形验证码">
+                " type="button" title="看不清，换一张" :disabled="loading">
+            <img :src="captcha" class="w-32 h-12" alt="图形验证码">
         </button>
 
         <p class="
@@ -67,7 +67,7 @@ import {
     type InputProps,
     useInput
 } from '~/composables/useInput';
-
+import axios from '~/plugins/axios';
 import {
     useWrapper
 } from '~/composables/useWrapper';
@@ -76,6 +76,7 @@ import {
     ref,
     computed,
     useSlots,
+    onBeforeMount,
 } from 'vue';
 
 defineOptions({
@@ -83,6 +84,28 @@ defineOptions({
     name: 'IInput',
 });
 
+let captcha = ref('');
+onBeforeMount(() => {
+    getCaptcha();
+
+});
+let loading = ref(false);
+const emits = defineEmits([
+    'update:modelValue',
+    'update:error',
+    'update:uuid'
+]);
+const getCaptcha = () => {
+    loading.value = true;
+    axios.get(`captchaImg`).then(({ data }) => {
+        emits('update:uuid', data.data.uuid);
+        captcha.value = `data:image/gif;base64,${data.data.img}`;
+    }).finally(() => {
+        loading.value = false;
+    });
+
+
+};
 const props = withDefaults(defineProps<
     InputProps & {
         type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search';
@@ -95,10 +118,7 @@ const props = withDefaults(defineProps<
     theme: 'default',
 });
 
-const emits = defineEmits([
-    'update:modelValue',
-    'update:error',
-]);
+
 
 const {
     id,
@@ -108,6 +128,7 @@ const {
     hasError,
     hasTip,
     clearValue,
+    manualValidate
 } = useInput(props, emits);
 
 const {
@@ -134,7 +155,10 @@ const slots = useSlots();
 const hasIcon = computed(() => !!slots.icon);
 
 defineExpose({
-    refresh
+    refresh,
+    getCaptcha,
+    manualValidate
+
 });
 
 </script>

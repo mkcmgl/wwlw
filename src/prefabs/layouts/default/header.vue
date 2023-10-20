@@ -22,7 +22,7 @@
                     class="
                         h-[85px] w-[85px]
                     "
-                    src="images/logo-monochrome.svg"
+                    :src="__LOGO_MONOCHROME__"
                     :alt="__APP_NAME__">
             </router-link>
         </nav>
@@ -74,11 +74,9 @@ import HeaderNav from '~/prefabs/layouts/default/header/nav.vue';
 import HeaderNotification from '~/prefabs/layouts/default/header/notification.vue';
 import HeaderProfile from '~/prefabs/layouts/default/header/profile.vue';
 
-type ExtendImportMeta = ImportMeta & {
-    env: Record<string,string> & {
-        VITE_APP_NAME: string;
-    };
-};
+import { ExtendImportMeta } from '~/types.d';
+
+import __LOGO_MONOCHROME__ from '~/assets/images/logo-monochrome.svg';
 
 const __APP_NAME__ = (import.meta as ExtendImportMeta).env.VITE_APP_NAME;
 

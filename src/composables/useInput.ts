@@ -15,7 +15,7 @@ import {
 } from '~/utils/validate';
 
 export const generateUuid = () => {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c: number) =>
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, (c: number) =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
 };
@@ -44,6 +44,9 @@ export const useInput = (
             return props.modelValue;
         },
         set(value) {
+            if (value) {
+                emits('update:error', '');
+            }
             emits('update:modelValue', value);
         }
     });
@@ -61,7 +64,6 @@ export const useInput = (
     };
 
     const clearValue = () => {
-
         computedValue.value = props.resetValue || '';
     };
 
@@ -95,7 +97,7 @@ export const useInput = (
         else {
             clearError();
         }
-
+        
         return isValid;
     };
 
@@ -110,7 +112,7 @@ export const useInput = (
     const registerColumn = inject(
         'registerColumn',
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (_: string, __: () => boolean, ___: () => void) => () => { }
+        (_: string, __: () => boolean, ___: () => void) => () => {}
     );
 
     onMounted(() => {
@@ -122,7 +124,7 @@ export const useInput = (
     const destroyColumn = inject(
         'destroyColumn',
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (_: string) => () => { }
+        (_: string) => () => {}
     );
 
     onUnmounted(() => {
@@ -142,5 +144,6 @@ export const useInput = (
         clearValue,
         hasError,
         hasTip,
+        manualValidate
     };
 };

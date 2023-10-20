@@ -22,18 +22,22 @@
                     :src="__USER_AVATAR__"
                     alt="avatar">
 
-                <span>
+                <span
+                    class="
+                        max-w-[100px]
+                    ">
                     <span
                         class="
                             block text-sm
                         ">
-                        150****6942
+                        {{ decrypt(user?.mobile.toString())?.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1****$3') }}
                     </span>
                     <span
                         class="
                             block text-xs text-left
+                            truncate overflow-hidden
                         ">
-                        admin
+                        {{ decrypt(user.username) }}
                     </span>
                 </span>
                 
@@ -46,16 +50,15 @@
                     class="
                         text-sm
                     ">
-                    <router-link
-                        @click="close"
+                    <button
+                        @click="close(), showLogoutDialog = true"
+                        type="button"
                         class="
                             relative p-4
                             flex justify-between items-center
                             hoverable
+                            w-full
                         "
-                        :to="{
-                            name: 'logout'
-                        }"
                         v-wave>
                         <span>
                             退出登录
@@ -64,7 +67,7 @@
                             class="
                                 mdi mdi-logout-variant
                             "></i>
-                    </router-link>
+                    </button>
                 </nav>
 
             </template>
@@ -72,6 +75,10 @@
         </dropdown>
 
     </span>
+
+    <logout-dialog
+        v-model:show="showLogoutDialog"/>
+
 </template>
 
 <script lang="ts" setup>
@@ -80,12 +87,34 @@ import __USER_AVATAR__ from '~/assets/images/avatar.svg';
 
 import {
     defineAsyncComponent,
+    ref,
+    computed,
 } from 'vue';
+
+import {
+    useAuthStore
+} from '~/store/auth';
+
+import decrypt from '~/utils/decrypt';
 
 const Dropdown = defineAsyncComponent(
     () => import(
         '~/components/dropdown.vue'
     )
+);
+
+const LogoutDialog = defineAsyncComponent(
+    () => import(
+        '~/prefabs/layouts/default/header/logout-dialog.vue'
+    )
+);
+
+const showLogoutDialog = ref(false);
+
+const authStore = useAuthStore();
+
+const user = computed(
+    () => authStore.user
 );
 
 </script>

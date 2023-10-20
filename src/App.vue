@@ -1,19 +1,22 @@
 <template>
+    
     <metainfo>
-        <template v-slot:title="{ content, metainfo }">
+        <template
+            v-slot:title="{ content, metainfo }">
             {{
                 metainfo.titleTemplate
-                ? metainfo.titleTemplate.replace('%s', content)
-                : content
+                    ? metainfo.titleTemplate.replace('%s', content)
+                    : content
             }}
             -
             {{ __APP_NAME__ }}
         </template>
     </metainfo>
 
-    <router-view />
+    <router-view/>
 
-    <notifications />
+    <notifications/>
+
 </template>
 
 <script lang="ts" setup>

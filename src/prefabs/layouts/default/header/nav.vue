@@ -14,27 +14,15 @@
                 {
                     label: '区块链网关',
                     to: {
-                        name: 'blockchain-gateways'
+                        name: 'gateways'
                     }
                 },
                 {
                     label: '区块链数据归档',
                     to: {
-                        name: 'blockchain-data-archives'
+                        name: 'archives'
                     }
                 },
-                {
-                    label: '数据资产',
-                    to: {
-                        name: 'data-assets'
-                    }
-                },
-                {
-                    label: '数据服务',
-                    to: {
-                        name: 'data-service'
-                    }
-                }
             ]"
             :key="index"
             :to="to"

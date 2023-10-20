@@ -7,6 +7,7 @@
 // id-card                         身份证号
 // social-credit-code              统一社会信用代码
 // no-emoji                        不包含 emoji 表情
+// json                            JSON 字符串
 
 // 通用校验
 
@@ -30,10 +31,14 @@ export type Value = string | number | boolean | null | undefined | File;
 export type CustomErrorMessages = Record<string, string>;
 
 export type ValueType = 'string' | 'number' | 'file';
-export type PresetCondition = 'phone' | 'email' | 'password' | 'password-confirm' | 'id-card' | 'social-credit-code' | 'no-emoji';
-export type CustomCondition = (value: Value) => string | undefined;
+export type PresetCondition = 'phone' | 'email' | 'password' | 'password-confirm' | 'id-card' | 'social-credit-code' | 'no-emoji' | 'json';
+export type CustomCondition = (value: Value) => {
+    isValid: boolean;
+    error?: string;
+};
 
-export type Rule = ValueType | PresetCondition | CustomCondition | 'required';
+export type Rule = ValueType | PresetCondition | CustomCondition | string;
+
 
 const innerValidate = (
     value: Value,
@@ -47,7 +52,7 @@ const innerValidate = (
 
     // 先校验预设规则
     if (
-        ['phone', 'email', 'password', 'id-card', 'social-credit-code', 'no-emoji'].includes(rule as PresetCondition)
+        ['phone', 'email', 'password', 'id-card', 'social-credit-code', 'no-emoji', 'json'].includes(rule as PresetCondition)
         || (rule as string).startsWith('password-confirm')
     ) {
         value = (value ?? '').toString();
@@ -170,6 +175,20 @@ const innerValidate = (
                 error: message ?? ':attr不能包含表情符号',
             };
         }
+
+        else if (
+            rule === 'json'
+        ) {
+            try {
+                JSON.parse(value);
+            }
+            catch (e) {
+                return {
+                    isValid: false,
+                    error: message ?? ':attr不是有效的JSON字符串',
+                };
+            }
+        }
     }
 
     // 通用校验
@@ -184,7 +203,7 @@ const innerValidate = (
         ) {
             return {
                 isValid: false,
-                error: message ?? ':attr长度不能小于:min位',
+                error: message ?? `:attr长度不能小于${(rule as string).split(':')[1]}个字符`,
             };
         }
 
@@ -194,7 +213,7 @@ const innerValidate = (
         ) {
             return {
                 isValid: false,
-                error: message ?? ':attr长度不能大于:max位',
+                error: message ?? `:attr长度不能大于${(rule as string).split(':')[1]}个字符`,
             };
         }
 
@@ -204,7 +223,7 @@ const innerValidate = (
         ) {
             return {
                 isValid: false,
-                error: message ?? ':attr长度必须等于:length位',
+                error: message ?? `:attr长度必须等于${(rule as string).split(':')[1]}个字符`,
             };
         }
 
@@ -230,7 +249,7 @@ const innerValidate = (
         ) {
             return {
                 isValid: false,
-                error: message ?? ':attr不能小于:min',
+                error: message ?? ':attr不能小于' + (rule as string).split(':')[1] ?? '0'
             };
         }
 
@@ -240,7 +259,7 @@ const innerValidate = (
         ) {
             return {
                 isValid: false,
-                error: message ?? ':attr不能大于:max',
+                error: message ?? ':attr不能大于' + (rule as string).split(':')[1] ?? '0'
             };
         }
     }
@@ -336,7 +355,11 @@ export const validate = (
         const rule = rulesWithoutRequired[i];
 
         if (typeof rule === 'function') {
-            error = rule(value);
+            const result = rule(value);
+
+            if (!result.isValid) {
+                error = result.error;
+            } 
         }
         else {
 

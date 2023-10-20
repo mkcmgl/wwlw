@@ -18,3 +18,7 @@
     font-weight: 100;
     src: url('./fonts/AlibabaPuHuiTi-3-45-Light.woff') format('woff');
 }
+
+html {
+    @apply font-sans;
+}

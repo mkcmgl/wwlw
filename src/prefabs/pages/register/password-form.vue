@@ -1,7 +1,7 @@
 <template>
     <i-form @submit="storeToken">
-        <i-input v-model="form.username" v-model:error="error.username" name="username" type="text" placeholder="请输入账号"
-            attr="注册账号" :rules="['required']" theme="auth-page">
+        <i-input v-model="form.username" v-model:error="error.username" name="username" type="text"
+            placeholder="请输入账号，5-20字符" attr="注册账号" :rules="['required', 'string', 'min:5', 'max:20']" theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">
@@ -14,7 +14,7 @@
         </i-input>
 
         <i-input v-model="form.password" v-model:error="error.password" name="password" type="password"
-            placeholder="请输入登录密码，6-20字符，需包含数字、字母，区分大小写" attr="密码" :rules="['required']" theme="auth-page">
+            placeholder="请输入登录密码，6-20字符，需包含数字、字母，区分大小写" attr="密码" :rules="['required', 'password']" theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">
@@ -26,8 +26,9 @@
             </template>
         </i-input>
 
-        <i-input v-model="form.passwordConfirm" v-model:error="error.passwordConfirm" name="passwordConfirm" type="password"
-            placeholder="请确认登录密码" attr="确认密码" :rules="['required']" theme="auth-page">
+        <i-input v-model="form.passwordConfirm" v-model:error="error.passwordConfirm" name="new-password-confirm"
+            type="password" placeholder="请确认登录密码" attr="确认密码" :rules="['required', `password-confirm:${form.password}`]"
+            theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">
@@ -39,8 +40,8 @@
             </template>
         </i-input>
 
-        <i-input v-model="form.phone" v-model:error="error.phone" name="phone" type="text" placeholder="请输入手机号" attr="手机号"
-            :rules="['required']" theme="auth-page">
+        <i-input ref="phoneInput" v-model="form.mobile" v-model:error="error.mobile" name="phone" type="tel"
+            placeholder="请输入手机号" attr="手机号" :rules="['required', 'phone']" theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">
@@ -52,8 +53,8 @@
             </template>
         </i-input>
 
-        <code-input v-model="form.captcha" v-model:error="error.captcha" name="captcha" type="text" placeholder="请输入验证码"
-            attr="验证码" :rules="['required']" theme="auth-page">
+        <code-input ref="captchaInput" v-model="form.imgCode" v-model:error="error.imgCode" v-model:uuid="form.uuid"
+            name="captcha" type="text" placeholder="请输入验证码" attr="验证码" :rules="['required']" theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">
@@ -65,8 +66,10 @@
             </template>
         </code-input>
 
-        <sms-input v-model="form.sms" v-model:error="error.sms" name="sms" type="text" placeholder="请输入短信验证码" attr="短信验证码"
-            :rules="['required']" theme="auth-page">
+        <sms-input ref="smsInput" :captcha-input="captchaInput" :phone-input="phoneInput" v-model="form.code"
+            v-model:uuid="form.uuid" v-model:mobile="form.mobile" v-model:imgCode="form.imgCode" v-model:error="error.code"
+            v-model:scene="form.scene" name="sms" type="text" placeholder="请输入短信验证码" attr="短信验证码" :rules="['required']"
+            theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">
@@ -91,37 +94,75 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-
+import { useRouter } from "vue-router";
 import IForm from "~/components/form.vue";
 import IInput from "~/components/input.vue";
 import CodeInput from "~/components/code-input.vue";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SmsInput from "~/components/sms-input.vue";
+import axios from "~/plugins/axios";
+import encrypt from "~/utils/encrypt";
+import { notify } from "@kyvg/vue3-notification";
 const form = ref({
-    remember: false,
     username: "",
     password: "",
     passwordConfirm: "",
-    phone: "",
-    captcha: "",
-    sms: "",
+    mobile: "",
+    uuid: "",
+    code: "",
+    imgCode: "",
+    scene: "22",
 });
-
 const error = ref({
-    remember: false,
     username: "",
     password: "",
     passwordConfirm: "",
-    phone: "",
-    captcha: "",
-    sms: "",
+    mobile: "",
+    uuid: "",
+    code: "",
+    imgCode: "",
+    scene: "22",
 });
 
 const loading = ref(false);
-
+const phoneInput = ref();
+const captchaInput = ref();
+const smsInput = ref();
+const router = useRouter();
 const storeToken = () => {
+    let formData = {
+        username: encrypt(form.value.username),
+        password: encrypt(form.value.password),
+        mobile: encrypt(form.value.mobile),
+        code: encrypt(form.value.code),
+    };
     loading.value = true;
-    setTimeout(() => {
-        loading.value = false;
-    }, 2000);
+    axios
+        .post("/auth/register", formData)
+        .then(({ data }) => {
+            if (data.code == 0) {
+                notify({
+                    type: "success",
+                    text: "注册成功，请登录",
+                });
+                router.push({
+                    name: "login",
+                });
+            } else {
+                notify({
+                    type: "error",
+                    text: data.msg,
+                });
+                throw new Error(data.msg);
+            }
+        })
+        .catch(() => {
+            captchaInput.value.getCaptcha();
+            captchaInput.value.refresh();
+            phoneInput.value.refresh();
+        })
+        .finally(() => {
+            loading.value = false;
+        });
 };
 </script>

@@ -69,9 +69,9 @@
                 v-for="(link, index) in item.links"
                 :key="index"
                 :to="link.route"
-                exact-active-class="
-                    enable-hoverable font-bold text-blue-600
-                "
+                :class="{
+                    'enable-hoverable font-bold text-blue-600': isActiveRoute(link.route),
+                }"
                 class="
                     my-1.5
                     block px-6 py-3
@@ -92,7 +92,8 @@
 import __ARROW_ICON__ from '~/assets/images/sidebar-arrow.svg';
 
 import {
-    type RouteLocationNamedRaw
+    type RouteLocationNamedRaw,
+    useRoute,
 } from 'vue-router';
 
 type Item = {
@@ -106,5 +107,11 @@ type Item = {
 defineProps<{
     item: Item;
 }>();
+
+const currentRoute = useRoute();
+
+const isActiveRoute = (route: RouteLocationNamedRaw) => {
+    return currentRoute.name?.toString().startsWith(route.name as string);
+};
 
 </script>

@@ -20,5 +20,11 @@
 ::-webkit-scrollbar-thumb:hover {
     @apply bg-slate-500;
 }
-
 @import './custom.scss';
+
+// hide edge input[type="password"] eye
+// https://stackoverflow.com/a/61450596/10519069
+input::-ms-reveal,
+input::-ms-clear {
+	@apply hidden;
+}
