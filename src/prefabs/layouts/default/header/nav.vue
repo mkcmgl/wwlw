@@ -4,26 +4,7 @@
             pr-4 -mx-1
         ">
         <router-link
-            v-for="({ to, label }, index) in [
-                {
-                    label: '数字身份',
-                    to: {
-                        name: 'digital-identities'
-                    }
-                },
-                {
-                    label: '区块链网关',
-                    to: {
-                        name: 'gateways'
-                    }
-                },
-                {
-                    label: '区块链数据归档',
-                    to: {
-                        name: 'archives'
-                    }
-                },
-            ]"
+            v-for="({ to, label }, index) in links"
             :key="index"
             :to="to"
             active-class="enable-clickable enable-hoverable font-bold"
@@ -42,3 +23,42 @@
         </router-link>
     </nav>
 </template>
+
+<script lang="ts" setup>
+
+import {
+    useAuthStore
+} from '~/store/auth';
+
+const authStore = useAuthStore();
+
+let links = [
+    {
+        label: '数字身份',
+        to: {
+            name: 'digital-identities'
+        }
+    },
+];
+
+if (!authStore.isPersonUser) {
+    links = [
+        ...links,
+        {
+            label: '区块链网关',
+            to: {
+                name: 'gateways'
+            }
+        },
+        {
+            label: '区块链数据归档',
+            to: {
+                name: 'archives'
+            }
+        },
+    ];
+}
+
+
+
+</script>

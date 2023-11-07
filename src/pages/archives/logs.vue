@@ -14,9 +14,20 @@
         ]"
         :filters="{
             operator: '操作者',
-            type: '操作类型',
-            content: '操作内容',
-            id: '日志 ID',
+            status: {
+                type: 'single-select',
+                label: '操作状态',
+                options: [
+                    {
+                        value: '1',
+                        label: '成功'
+                    },
+                    {
+                        value: '2',
+                        label: '失败'
+                    },
+                ]
+            },
         }">
 
         <template

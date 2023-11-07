@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import Cookie from 'js-cookie';
 
 import { ExtendImportMeta } from '~/types.d';
-import { User } from '~/types/auth';
+import { User, Iid, Role } from '~/types/auth';
 import { PeosonalForm, BusinessForm, IidForm, IidDidForm, } from '~/types/iid';
 import axios from '~/plugins/axios';
 
@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', {
 
     state: () => ({
         _user: {} as User,
+        _iid: {} as Iid,
         _iidFrom: {
             iidDidForm: {
                 iid: '',
@@ -40,6 +41,9 @@ export const useAuthStore = defineStore('auth', {
         user(): User {
             return this._user;
         },
+        iid(): Iid {
+            return this._iid;
+        },
         iidFrom(): IidForm {
             return this._iidFrom;
         },
@@ -49,6 +53,19 @@ export const useAuthStore = defineStore('auth', {
         isAuthed(): boolean {
             return Object.keys(this._user).length > 0;
         },
+        isVerified(): boolean {
+            return this._user.authenticationStatus == 1 || this.isAdmin;
+        },
+        hasIid(): boolean {
+            return !!this._iid.iid || this.isAdmin;
+        },
+
+        isPersonUser(): boolean {
+            return this._user.roles?.map((role: Role) => role.code).includes('person');
+        },
+        isAdmin(): boolean {
+            return this._user.roles?.map((role: Role) => role.code).includes('super_admin');
+        },
     },
 
     actions: {
@@ -56,7 +73,10 @@ export const useAuthStore = defineStore('auth', {
         setUser(user: User) {
             this._user = user;
         },
-        setIid(iidFrom: IidForm) {
+        setIid(iid: Iid) {
+            this._iid = iid;
+        },
+        setIidFrom(iidFrom: IidForm) {
             this._iidFrom = iidFrom;
         },
         setToken(token: string) {
@@ -118,6 +138,22 @@ export const useAuthStore = defineStore('auth', {
                     }
                 });
                 this.setUser(data.data as User);
+            }
+            catch (e) {
+                this.clearAuth();
+            }
+            await this.forceGetUserInfo();
+
+        },
+
+        async forceGetUserInfo() {
+            try {
+                const { data } = await axios.get('/iid/getInfo', {
+                    headers: {
+                        'Authorization': `Bearer ${this._token}`
+                    }
+                });
+                this.setIid(data.data as Iid);
             }
             catch (e) {
                 this.clearAuth();

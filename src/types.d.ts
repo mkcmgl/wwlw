@@ -6,6 +6,7 @@ export type ExtendImportMeta = ImportMeta & {
         VITE_TOKEN_KEY?: string;
         VITE_APP_PUBLIC_KEY: string;
         VITE_APP_PRIVATE_KEY: string;
+        VITE_APP_DES_KEY: string;
         VITE_BLOCKCHAIN_BROWSER_URL: string;
     };
 };

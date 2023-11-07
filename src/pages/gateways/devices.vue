@@ -23,11 +23,13 @@
             '操作'
         ]"
         :filters="{
-            id: '设备 ID',
-            businessId: '企业 ID',
             deviceName: '设备名称',
-            deviceIid: '设备 IID',
-            txHash: '设备哈希',
+            access: {
+                type: 'datetime-period',
+                label: '接入时间',
+                start: 'startAccessTime',
+                end: 'endAccessTime',
+            },
             certificationStatus: {
                 type: 'single-select',
                 label: '认证状态',
@@ -45,7 +47,13 @@
                         value: '2',
                     },
                 ],
-            }
+            },
+            certification: {
+                type: 'datetime-period',
+                label: '认证时间',
+                start: 'startCertificationTime',
+                end: 'endcertificationTime',
+            },
         }">
 
         <template

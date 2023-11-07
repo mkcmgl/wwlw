@@ -80,10 +80,10 @@ const innerValidate = (
         else if (
             rule === 'password'
         ) {
-            if (value.length < 6) {
+            if (value.length < 8) {
                 return {
                     isValid: false,
-                    error: message ?? ':attr长度不能小于6位',
+                    error: message ?? ':attr长度不能小于8位',
                 };
             }
             else if (value.length > 20) {

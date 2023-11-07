@@ -58,7 +58,7 @@
                     "
                     name="new-password"
                     attr="新密码"
-                    placeholder="请输入登录密码，6-20字符，需包含数字、字母，区分大小写"
+                    placeholder="请输入登录密码，8-20字符，需包含数字、大小写字母和特殊符号"
                     type="password"
                     v-model="form.newPassword"
                     v-model:error="error.newPassword"
@@ -159,8 +159,9 @@ import {
     computed,
     ref,
     watch,
-    toRaw,
 } from 'vue';
+
+import encrypt from '~/utils/encrypt';
 
 import CustomDialog from '~/components/dialog.vue';
 import IForm from '~/components/form.vue';
@@ -168,8 +169,6 @@ import IInput from '~/components/input.vue';
 
 import axios from '~/plugins/axios';
 import { notify } from '~/plugins/notify';
-
-import { pick } from 'lodash-es';
 
 const props = defineProps<{
     show: boolean,
@@ -215,12 +214,15 @@ watch(
 
 const updatePassword = () => {
     loading.value = true;
+
+    const formData = {
+        oldPassword: encrypt(form.value.oldPassword),
+        newPassword: encrypt(form.value.newPassword),
+    };
+
     axios.put(
         '/user/profile/update-password',
-        pick(toRaw(form.value), [
-            'oldPassword',
-            'newPassword',
-        ])
+        formData
     )
         .then(() => {
             computedShow.value = false;
@@ -229,7 +231,7 @@ const updatePassword = () => {
                 type: 'success',
             });
         })
-        .then(() => {
+        .finally(() => {
             loading.value = false;
         });
 };

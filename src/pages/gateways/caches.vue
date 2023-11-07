@@ -88,7 +88,7 @@
                             内存配置
                         </th>
                         <td>
-                            {{ cache.maxMemory }}
+                            {{ cache.maxMemory.toFixed(2) }} MB
                         </td>
                     </tr>
                     <tr>

@@ -22,7 +22,7 @@
             custom-el-date-picker
         "
         v-model="computedValue"
-        value-format="YYYY-MM-DDTHH:mm:ss[Z]"
+        value-format="YYYY-MM-DD HH:mm:ss"
         type="datetimerange"
         range-separator="至"
         :start-placeholder="startPlaceholder"
@@ -56,10 +56,18 @@ const emits = defineEmits([
 
 const computedValue = computed({
     get() {
-        return props.modelValue.split(',');
+        if (props.modelValue) {
+            return props.modelValue.split(',');
+        } else {
+            return props.modelValue;
+        }
     },
     set(val) {
-        emits('update:modelValue', val.join(','));
+        if (val) {
+            emits('update:modelValue', val.join(','));
+        } else {
+            emits('update:modelValue', val);
+        }
     }
 });
 

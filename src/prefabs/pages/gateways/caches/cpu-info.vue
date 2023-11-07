@@ -2,7 +2,7 @@
     <div
         ref="wrapper"
         class="
-            h-[300px]
+            h-[400px]
         ">
     </div>
 </template>
@@ -36,8 +36,7 @@ const loadPanel = () => {
             trigger: 'item'
         },
         legend: {
-            top: '0%',
-            left: 'center'
+            show: false,
         },
         series: [
             {
@@ -52,7 +51,7 @@ const loadPanel = () => {
                     }
                 },
                 labelLine: {
-                    show: false
+                    show: true
                 },
                 data: props.commandStats.map((item) => {
                     return {

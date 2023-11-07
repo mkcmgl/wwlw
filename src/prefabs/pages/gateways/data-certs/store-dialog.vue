@@ -156,7 +156,7 @@
                     placeholder="请输入存证数据"
                     attr="存证数据"
                     name="data"
-                    :max="100"
+                    :max="-1"
                     :rules="[
                         'required',
                         'no-emoji',

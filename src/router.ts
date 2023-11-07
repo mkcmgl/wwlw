@@ -5,6 +5,9 @@ import {
 
 import { auth } from '~/middlewares/auth';
 import { guest } from '~/middlewares/guest';
+import { verified } from '~/middlewares/verified';
+import { iid } from '~/middlewares/iid';
+import { notPersonUser } from '~/middlewares/not-person-user';
 
 const routes = [
 
@@ -62,6 +65,12 @@ const routes = [
                         component: () => import('~/pages/digital-identities/index.vue'),
                         name: 'digital-identities/mine',
                     },
+                    // 认证详情
+                    {
+                        path: 'mine/detail',
+                        component: () => import('~/pages/digital-identities/mine-detail.vue'),
+                        name: 'digital-identities/mine/detail',
+                    },
                     //激活数字身份
                     {
                         path: 'activate',
@@ -79,6 +88,12 @@ const routes = [
                         path: 'audit',
                         component: () => import('~/pages/digital-identities/audit/index.vue'),
                         name: 'digital-identities/audit',
+                        beforeEnter: [
+                            auth,
+                            verified,
+                            iid,
+                            notPersonUser
+                        ],
                     },
                     {
                         path: 'audit/detail',
@@ -90,6 +105,12 @@ const routes = [
                         path: 'companies',
                         component: () => import('~/pages/digital-identities/companies.vue'),
                         name: 'digital-identities/companies',
+                        beforeEnter: [
+                            auth,
+                            verified,
+                            iid,
+                            notPersonUser
+                        ],
                     },
                     // 消息中心
                     {
@@ -114,6 +135,12 @@ const routes = [
             {
                 path: 'gateways',
                 component: () => import('~/pages/gateways.vue'),
+                beforeEnter: [
+                    auth,
+                    verified,
+                    iid,
+                    notPersonUser
+                ],
                 children: [
                     {
                         path: '',
@@ -167,6 +194,12 @@ const routes = [
             {
                 path: 'archives',
                 component: () => import('~/pages/archives.vue'),
+                beforeEnter: [
+                    auth,
+                    verified,
+                    iid,
+                    notPersonUser
+                ],
                 children: [
                     {
                         path: '',

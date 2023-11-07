@@ -13,9 +13,7 @@
             '创建时间',
         ]"
         :filters="{
-            backupId: '归档 ID',
             nodeId: '还原节点编号',
-            id: '还原 ID',
             status: {
                 type: 'single-select',
                 label: '还原状态',

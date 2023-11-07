@@ -2,7 +2,7 @@
     <div
         ref="wrapper"
         class="
-            h-[240px]
+            h-[340px]
         ">
 
     </div>
@@ -58,7 +58,7 @@ const loadPanel = () => {
                     }
                 },
                 detail: {
-                    formatter: `{a|${(props.value * 100 / props.max).toFixed(2)}MB}`,
+                    formatter: `{a|${(props.value * 100 / props.max).toFixed(2)}%}`,
                     rich: {
                         a: {
                             fontWeight: '600',

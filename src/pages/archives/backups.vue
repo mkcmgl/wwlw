@@ -16,10 +16,6 @@
         ]"
         :filters="{
             name: '快照名称',
-            snapshotId: '对应快照 ID',
-            filename: '归档文件名',
-            hash: '归档文件哈希',
-            id: '归档ID',
             status: {
                 type: 'single-select',
                 label: '归档状态',

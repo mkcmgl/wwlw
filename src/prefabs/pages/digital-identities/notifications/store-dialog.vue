@@ -128,6 +128,8 @@
                     :rules="[
                         'required',
                         'no-emoji',
+                        'string',
+                        'max:100'
                     ]"/>
             </div>
 

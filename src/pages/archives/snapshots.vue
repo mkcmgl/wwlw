@@ -27,7 +27,6 @@
             '详情'
         ]"
         :filters="{
-            id: '快照 ID',
             name: '快照名称',
             type: {
                 type: 'single-select',
@@ -43,26 +42,17 @@
                     }
                 ]
             },
-            nodeId: '快照节点编号',
-            periodType: {
-                type: 'single-select',
-                label: '快照周期',
-                options: [
-                    {
-                        value: '1',
-                        label: '每天'
-                    },
-                    {
-                        value: '2',
-                        label: '每周'
-                    },
-                    {
-                        value: '3',
-                        label: '每月'
-                    }
-                ]
+            retentionDay: {
+                type: 'number',
+                label: '保留天数',
+                attrs: {
+                    min: 1,
+                    max: 365
+                }
             },
-        }">
+            
+        }"
+        enable-sticky>
 
         <template
             #tr="{

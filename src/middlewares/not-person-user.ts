@@ -10,9 +10,9 @@ import {
     notify
 } from '~/plugins/notify';
 
-// 实名认证
+// 非个人用户
 
-export const verified = async (
+export const notPersonUser = async (
     to: RouteLocationNormalized,
     from,
     next
@@ -21,20 +21,19 @@ export const verified = async (
     await useAuthStore().refreshUser();
 
     if (
-        useAuthStore().isVerified
-        || useAuthStore().isAdmin
+        !useAuthStore().isPersonUser
     ) {
         next();
     }
     else {
 
         notify({
-            title: '请先完成实名认证',
+            title: '无查看权限',
             type: 'warning'
         });
 
         next({
-            name: 'digital-identities/authentication',
+            name: 'index',
         });
     }
 };

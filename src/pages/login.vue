@@ -9,10 +9,10 @@
     }
 
     &[aria-exact="true"] {
-        @apply text-blue-600 font-bold;
+        @apply text-[#2f88ff]  font-bold;
 
         &::after {
-            @apply bg-blue-600;
+            @apply bg-[#2f88ff] ;
         }
     }
 

@@ -22,6 +22,12 @@ export enum AuthenticationStatus {
     '认证未通过' = 2,
     '认证中' = 3,
 }
+export enum AuthenticationStatusType {
+    '立即认证' = 0,
+    '查看认证详细' = 1,
+    '重新认证' = 2,
+    '查看审核进度' = 3,
+}
 
 export type Role = SuperAdmin | PersonUser | CompanyManager;
 

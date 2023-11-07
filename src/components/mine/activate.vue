@@ -1,13 +1,15 @@
 <template>
-    <div class="h-[55px] w-50 flex items-center px-4" @click="back">
-        <svg xmlns="http://www.w3.org/2000/svg" class="cursor-pointer" width="6.28" height="10.499"
-            viewBox="0 0 6.28 10.499">
-            <path class="a"
-                d="M133.053,555.55l3.606-3.559a1.021,1.021,0,0,0,.009-1.418,1,1,0,0,0-.713-.3,1.07,1.07,0,0,0-.705.289l-4.29,4.233a1.019,1.019,0,0,0,0,1.423l4.26,4.26a1,1,0,0,0,1.418,0,1.019,1.019,0,0,0,0-1.417Z"
-                transform="translate(-130.669 -550.275)" />
-        </svg>
-        <h1 class="font-bold text-xl ml-3 leading-relaxed cursor-pointer" v-html="title" />
-        <slot />
+    <div>
+        <div class="h-[55px] w-[fit-content] flex items-center px-4" @click="back">
+            <svg xmlns="http://www.w3.org/2000/svg" class="cursor-pointer" width="6.28" height="10.499"
+                viewBox="0 0 6.28 10.499">
+                <path class="a"
+                    d="M133.053,555.55l3.606-3.559a1.021,1.021,0,0,0,.009-1.418,1,1,0,0,0-.713-.3,1.07,1.07,0,0,0-.705.289l-4.29,4.233a1.019,1.019,0,0,0,0,1.423l4.26,4.26a1,1,0,0,0,1.418,0,1.019,1.019,0,0,0,0-1.417Z"
+                    transform="translate(-130.669 -550.275)" />
+            </svg>
+            <h1 class="font-bold text-xl ml-3 leading-relaxed cursor-pointer" v-html="title" />
+            <slot />
+        </div>
     </div>
     <div class="h-[calc(100vh-150px)] mx-4 overflow-auto">
         <div class="flex items-center justify-center mb-4">
@@ -31,10 +33,12 @@
                     <el-form ref="iidFromRef" label-width="85px" label-position="left" class="text-[#333] did-from"
                         :model="submitiidFrom" :rules="iidFromRules">
                         <el-form-item label="did:id" prop="iid" style="margin-bottom:30px">
-                            <el-input class="did-input" v-model="submitiidFrom.iid" placeholder="请输入did:id"></el-input>
+                            <el-input disabled:disabledSelect class="did-input" v-model="submitiidFrom.iid"
+                                placeholder="请输入did:id"></el-input>
                         </el-form-item>
                         <el-form-item label="did公钥" prop="publicKey">
-                            <el-input class="did-input" v-model="submitiidFrom.publicKey" placeholder="请输入did公钥"></el-input>
+                            <el-input disabled:disabledSelect class="did-input" v-model="submitiidFrom.publicKey"
+                                placeholder="请输入did公钥"></el-input>
                         </el-form-item>
                     </el-form>
                 </div>
@@ -76,10 +80,13 @@ import {
     useAuthStore
 } from '~/store/auth';
 import { IidDidForm } from '~/types/iid';
+import axios from '~/plugins/axios';
 const authStore = useAuthStore();
 
 const iidFrom = computed(() => authStore.iidFrom);
+const iid = computed(() => authStore.iid);
 const loading = ref(false);
+const disabledSelect = ref(true);
 const props = withDefaults(defineProps<{
     title: string;
     useTitleTemplate?: boolean;
@@ -157,9 +164,19 @@ const subDidForm = (formEl: FormInstance | undefined) => {
         if (valid) {
             loading.value = true;
             iidFrom.value.iidDidForm = submitiidFrom.value;
-            router.push({
-                name: 'digital-identities/authentication'
+            axios.post("/iid/activate", submitiidFrom.value).then(({ data }) => {
+                if (data.code == 0) {
+                    router.push({
+                        name: 'digital-identities/authentication'
+                    });
+                }
+            }).catch(() => {
+
+            }).finally(() => {
+                loading.value = false;
+
             });
+
         } else {
             return false;
         }
@@ -167,7 +184,19 @@ const subDidForm = (formEl: FormInstance | undefined) => {
     loading.value = false;
 };
 const getIidFrom = () => {
-    submitiidFrom.value =iidFrom.value.iidDidForm;
+
+    submitiidFrom.value = iid.value;
+    if (iid.value.authenticationStatus == 1 || iid.value.authenticationStatus == 3) {
+        router.push({
+            path: "mine",
+        });
+    } else if (submitiidFrom.value.iid && submitiidFrom.value.publicKey) {
+        router.push({
+            path: "authentication",
+        });
+    } else {
+        disabledSelect.value = false;
+    }
 };
 </script>
 
@@ -181,9 +210,11 @@ const getIidFrom = () => {
     ::v-deep(.el-form-item__label)::before {
         display: none;
     }
-    ::v-deep(.el-form-item__label){
-        color:#333;
+
+    ::v-deep(.el-form-item__label) {
+        color: #333;
     }
+
     ::v-deep(.el-input__wrapper) {
         border-radius: 5px;
         height: 50px;
@@ -195,5 +226,4 @@ const getIidFrom = () => {
             font-size: 18px;
         }
     }
-}
-</style>
+}</style>

@@ -42,16 +42,28 @@
             {{ parseTime(message.readTime) }}
         </td>
         <td
-            class="listRightSticky">
+            class="listRightSticky bg-white">
             <button
                 type="button"
-                @click="show = true"
+                @click="showMessageDialog"
                 class="
                     text-blue-600
                     no-underline
                     hover:underline
+                    mr-2
                 ">
                 查看
+            </button>
+
+            <button
+                type="button"
+                @click="isShowDeleteConfirmDialog = true"
+                class="
+                    text-red-600
+                    no-underline
+                    hover:underline
+                ">
+                删除
             </button>
         </td>
     </tr>
@@ -157,22 +169,95 @@
 
         </div>
 
-        
-
     </custom-dialog>
+
+
+    <custom-dialog
+        class="w-[500px]"
+        v-model:show="isShowDeleteConfirmDialog"
+        :prevent="loading">
+
+        <template #title>
+            确认删除
+        </template>
+
+        <p>
+            您确定要删除该消息吗？
+        </p>
+        <p
+            class="
+                p-2 rounded bg-slate-100 border my-4
+            "
+            v-html="message.templateContent"></p>
+
+        <form
+            class="
+                -mx-2 text-right
+            "
+            @submit.prevent="deleteMessage">
+
+            <button
+                class="
+                    mx-2
+                    p-2.5
+                    w-32 rounded
+                    border-2
+                    clickable relative
+                    overflow-hidden
+                "
+                @click="isShowDeleteConfirmDialog = false"
+                type="reset"
+                :disabled="loading"
+                v-wave="!loading">
+                取消
+            </button>
+
+            <button
+                class="
+                    mx-2
+                    p-2.5
+                    w-32 rounded
+                    text-white
+                    clickable relative
+                    overflow-hidden
+                    linear-hover
+                "
+                :class="[
+                    loading
+                        ? 'cursor-not-allowed backdrop-grayscale'
+                        : ''
+                ]"
+                type="submit"
+                :disabled="loading"
+                v-wave="!loading">
+                <i
+                    v-if="loading"
+                    class="
+                        mdi mdi-loading mdi-spin mr-2
+                    "></i>
+                确定删除
+            </button>
+        
+        </form>
+    </custom-dialog>
+
 </template>
 
 <script lang="ts" setup>
 
 import {
-    type Message,
+    type NotifyMessage as Message,
     MessageTypes,
 } from '~/types/digital-identities/message';
 
 import CustomCheckbox from '~/components/checkbox.vue';
 import CustomDialog from '~/components/dialog.vue';
 
+import axios from '~/plugins/axios';
+import { notify } from '~/plugins/notify';
+
 import {
+    type Ref,
     ref,
     inject,
 } from 'vue';
@@ -185,14 +270,16 @@ const props = defineProps<{
     message: Message;
 }>();
 
-defineEmits([
+const emits = defineEmits([
     'updated',
 ]);
 
 const isSelected = ref(false);
 
-const registerCheckbox = inject('registerCheckbox');
-
+const registerCheckbox = inject('registerCheckbox') as (params: {
+    isSelected: Ref<boolean>;
+    messageId: number;
+}) => void;
 
 registerCheckbox({
     isSelected,
@@ -201,7 +288,37 @@ registerCheckbox({
 
 const show = ref(false);
 
+const showMessageDialog = () => {
+    show.value = true;
+
+    if (!props.message.readStatus) {
+        axios.put(`/notify-message/update-read?ids=${props.message.id}`)
+            .then(() => {
+                emits('updated');
+            });
+    }
+};
 
 
+const isShowDeleteConfirmDialog = ref(false);
+const loading = ref(false);
+
+const deleteMessage = () => {
+    loading.value = true;
+
+    axios.put(`/notify-message/deleteMessage?ids=${props.message.id}`)
+        .then(() => {
+            emits('updated');
+            isShowDeleteConfirmDialog.value = false;
+
+            notify({
+                type: 'success',
+                title: '删除成功',
+            });
+        })
+        .finally(() => {
+            loading.value = false;
+        });
+};
 
 </script>

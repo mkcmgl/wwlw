@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[55px] w-50 flex items-center px-4" @click="back">
+  <div class="h-[55px] w-[fit-content] flex items-center px-4" @click="back">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="cursor-pointer"
@@ -72,12 +72,11 @@
                   v-model:file-list="fileList"
                   list-type="picture-card"
                   :action="_UPLOAD_URL_"
-                  
+                  :class="{ uploadImgDisabled: uploadDisabled1 }" 
                   :on-remove="handleRemove"
                   :on-preview="handlePictureCardPreview"
-                  :headers="{ Authorization: 'Bearer ' + authStore.token }"
+                  :headers="headers"
                   :limit="limitNum"
-                  :class="{disabled:uploadDisabled1}" 
                   :before-upload="beforeAvatarUpload"
                   :on-success="handleAvatarSuccess"
                 >
@@ -207,11 +206,11 @@
                 multiple
                  v-model:file-list="idPortraitFileList"
                   :action="_UPLOAD_URL_"
-                  :headers="{ Authorization: 'Bearer ' + authStore.token }"
+                  :headers="headers"
                   :on-remove="handleRemoveIdPortrait"
                   :on-preview="handlePictureCardPreview"
                   :limit="limitNum"
-                  :class="{disabled:uploadDisabled1}" 
+                  :class="{ uploadImgDisabled: uploadDisabled2 }"  
                   :before-upload="beforeAvatarUpload"
                   :on-success="handleAvatarSuccessIdPortrait"
                   list-type="picture-card"
@@ -246,10 +245,11 @@
                 :on-remove="handleRemoveIdEmblem"
                 :before-upload="beforeAvatarUpload"
                 :on-success="handleAvatarSuccessIdEmblem"
+                :on-preview="handlePictureCardPreview"
                 :action="_UPLOAD_URL_"
                 :limit="limitNum"
-                :class="{disabled:uploadDisabled1}" 
-                :headers="{ Authorization: 'Bearer ' + authStore.token }"
+                :class="{ uploadImgDisabled: uploadDisabled3 }"  
+                :headers="headers"
                 list-type="picture-card"
               >
                   <div  class="flex justify-around">
@@ -295,6 +295,60 @@
   <el-dialog v-model="dialogVisible">
     <img w-full :src="dialogImageUrl" alt="Preview Image" />
   </el-dialog>
+  
+  <custom-dialog
+        class="w-[500px]"
+        @close="handlerConfirm"
+        v-model:show="show">
+        <div
+            class="
+                p-4
+            ">
+            <div class=" flex-col flex h-[300px]  items-center justify-center">
+                <img src="/src/assets/images/submitOk.svg" alt="提交成功" class="w-[220px]">
+                <span  class="text-2xl relative top-[-75px]  font-normal text-[#333]">认证申请提交成功</span>
+                <span  class="text-sm relative top-[-70px]  font-normal text-[#999]">您已提交认证申请，请耐心等待审核结果</span>
+                <button class="m-auto  block w-72 p-2.5 rounded-[5px] text-white tracking-widest clickable relative" :class="[
+                      loading
+                          ? 'bg-slate-300 cursor-not-allowed'
+                          : 'bg-[linear-gradient(90deg,#0477FD_0%,#04D8FD_100%)]',
+                  ]" type="submit" :disabled="loading" v-wave="!loading" @click="handlerConfirm">
+                      <i v-if="loading" class="mdi mdi-loading mdi-spin mr-2"></i>
+                      确认
+                </button>
+            </div>
+          </div>
+
+        
+
+   </custom-dialog>
+  <custom-dialog
+        class="w-[500px]"
+        @close="handlerConfirm"
+        v-model:show="showError">
+
+        <div
+            class="
+                p-4
+            ">
+            <div class=" flex-col flex h-[300px]  items-center justify-center">
+                <img src="/src/assets/images/submitError.svg" alt="提交成功" class="w-[220px]">
+                <span  class="text-2xl relative top-[-75px]  font-normal text-[#333]">出错了！</span>
+                <span  class="text-sm relative top-[-70px]  font-normal text-[#999]">请核实数字身份相关信息，重新填写后进行激活</span>
+                <button class="m-auto  block w-72 p-2.5 rounded-[5px] text-white tracking-widest clickable relative" :class="[
+                      loading
+                          ? 'bg-slate-300 cursor-not-allowed'
+                          : 'bg-[linear-gradient(90deg,#0477FD_0%,#04D8FD_100%)]',
+                  ]" type="submit" :disabled="loading" v-wave="!loading" @click="handlerConfirm">
+                      <i v-if="loading" class="mdi mdi-loading mdi-spin mr-2"></i>
+                      确认
+                </button>
+            </div>
+          </div>
+
+        
+
+  </custom-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -312,12 +366,10 @@ import {
 import type  { UploadProps , UploadUserFile } from "element-plus";
 import axios from "~/plugins/axios";
 import { notify } from "@kyvg/vue3-notification";
-import { ExtendImportMeta } from "~/types.d";
-import encrypt from "~/utils/encrypt";
+import { encrypt, encryptByDES } from "~/utils/encrypt";
 import type { UploadFile } from "element-plus";
-const _UPLOAD_URL_ =
-  (import.meta as ExtendImportMeta).env.VITE_API_UPLOAD_URL +
-  "/admin-api/system/iid/uploadImg";
+import CustomDialog from '~/components/dialog.vue';
+const _UPLOAD_URL_ ="api/iid/uploadImg";
 // const _UPLOAD_URL_ = 'http://10.180.13.35:48082/infra/file/upload';
 const loading = ref(false);
 const props = withDefaults(
@@ -331,8 +383,12 @@ const props = withDefaults(
     }
 );
 const authStore = useAuthStore();
-
+const show = ref(false);
+const showError = ref(false);
 const iidFrom = computed(() => authStore.iidFrom);
+const headers= computed(() =>{
+    return{ 'Authorization': 'Bearer ' + authStore.token ,'tenant-id':'1' };
+});
 let selectValue = reactive<AddressObj>({
     id: "",
     name: "",
@@ -350,6 +406,8 @@ const addressData = ref<AddressList>([]);
 const addressData2 = ref<AddressList>([]);
 const addressData3 = ref<AddressList>([]);
 const uploadDisabled1 = ref(false);
+const uploadDisabled2 = ref(false);
+const uploadDisabled3 = ref(false);
 const fileList = ref<UploadUserFile[]>();
 const idPortraitFileList = ref<UploadUserFile[]>();
 const idEmblemFileList = ref<UploadUserFile[]>();
@@ -429,8 +487,8 @@ const businessRules = reactive<FormRules<BusinessForm>>({
         { required: true, message: "请输入详细地址", trigger: "blur" },
         {
             min: 2,
-            max: 200,
-            message: "详细地址必须介于 2 和 200 之间",
+            max: 100,
+            message: "详细地址必须介于 2 和 100 之间",
             trigger: "blur",
         },
         { required: true, validator: equalToEmpty, trigger: "blur" },
@@ -474,12 +532,15 @@ const handlerTypeChange = (e: any) => {
     if (e == 2) {
         authStore.clearPoesonalForm();
         (poesonalRuleFormRef.value as FormInstance).resetFields();
-        idPortraitFileList.value=<UploadUserFile>[];
-        idEmblemFileList.value=<UploadUserFile>[];
+        idPortraitFileList.value=[] as UploadUserFile[];
+        idEmblemFileList.value=[] as UploadUserFile[];
+        uploadDisabled2.value = false;
+        uploadDisabled3.value = false;
     } else {
         authStore.clearBusinessForm();
         (businessFormRef.value as FormInstance).resetFields();
-        fileList.value=<UploadUserFile>[];
+        fileList.value = [] as UploadUserFile[];
+        uploadDisabled1.value = false;
     }
 };
 
@@ -582,18 +643,30 @@ const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 const handleAvatarSuccess= (response:any,uploadFile:any) => {
-    (iidFrom.value.businessForm as BusinessForm).licenseImg = response.data;
-    uploadDisabled1.value = true;
+    if(response.code==0){
+        (iidFrom.value.businessForm as BusinessForm).licenseImg = response.data;
+        uploadDisabled1.value = true;
+    }else{
+        notify({ type: "error", text: response.msg });
+    }
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 const handleAvatarSuccessIdPortrait= (response:any,uploadFile:any) => {
-    (iidFrom.value.poesonalForm as PeosonalForm).idPortrait = response.data;
-    uploadDisabled1.value = true;
+    if(response.code==0){
+        (iidFrom.value.poesonalForm as PeosonalForm).idPortrait = response.data;
+        uploadDisabled2.value = true;
+    }else{
+        notify({ type: "error", text: response.msg });
+    }
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 const handleAvatarSuccessIdEmblem= (response:any,uploadFile:any) => {
-    (iidFrom.value.poesonalForm as PeosonalForm).idEmblem = response.data;
-    uploadDisabled1.value = true;
+    if(response.code==0){
+        (iidFrom.value.poesonalForm as PeosonalForm).idEmblem = response.data;
+        uploadDisabled3.value = true;
+    }else{
+        notify({ type: "error", text: response.msg });
+    }
 };
 const handlePictureCardPreview = (file: UploadFile) => {
     dialogImageUrl.value = file.url!;
@@ -608,12 +681,12 @@ const handleRemove = (file: any,fileList:any) => {
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 const handleRemoveIdPortrait = (file: any,fileList:any) => {
-    uploadDisabled1.value =false;
+    uploadDisabled2.value =false;
     (iidFrom.value.poesonalForm as PeosonalForm).idPortrait = '';
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
 const handleRemoveIdEmblem = (file: any,fileList:any) => {
-    uploadDisabled1.value =false;
+    uploadDisabled3.value =false;
     (iidFrom.value.poesonalForm as PeosonalForm).idEmblem = '';
 };
 const submitForm = async () => {
@@ -624,48 +697,53 @@ const submitForm = async () => {
                     iid: iidFrom.value.iidDidForm.iid,
                     publicKey: iidFrom.value.iidDidForm.publicKey,
                     authenticationType: "102",
-                    orgName: encrypt(
-            (iidFrom.value.businessForm as BusinessForm).orgName as string
-                    ),
-                    businessLicense: (iidFrom.value.businessForm as BusinessForm)
-                        .licenseImg,
-                    address: encrypt(
-            (iidFrom.value.businessForm as BusinessForm).address as string
-                    ),
-                    addressDetail: encrypt(
-            (iidFrom.value.businessForm as BusinessForm).addressDetail as string
-                    ),
-                    contactName: encrypt(
-            (iidFrom.value.businessForm as BusinessForm).contactName as string
-                    ),
-                    contactMobile: encrypt(
-            (iidFrom.value.businessForm as BusinessForm).contactPhone as string
-                    ),
+                    orgName: encryptByDES((iidFrom.value.businessForm as BusinessForm).orgName as string),
+                    businessLicense: (iidFrom.value.businessForm as BusinessForm).licenseImg,
+                    address: encrypt((iidFrom.value.businessForm as BusinessForm).address as string),
+                    addressDetail: encryptByDES((iidFrom.value.businessForm as BusinessForm).addressDetail as string),
+                    contactName: encryptByDES((iidFrom.value.businessForm as BusinessForm).contactName as string),
+                    contactMobile: encrypt((iidFrom.value.businessForm as BusinessForm).contactPhone as string),
                 };
                 loading.value = true;
-                axios
-                    .post("/iid/activate", submitBusinessForm)
-                    .then(({ data }) => {
-                        if (data.code == 0) {
-                            notify({
-                                type: "success",
-                                text: "提交成功,请等待审核！",
-                            });
-                            authStore.clearIidFrom();
-                            router.push({
-                                path: "/",
-                            });
-                        } else {
-                            notify({ type: "error", text: data.msg });
-                        }
-                    })
-                    .catch((e) => {
-                        notify({ type: "error", text: e });
-                    })
-                    .finally(() => {
-                        loading.value = false;
-                        (businessFormRef.value as FormInstance).clearValidate();
+                if(authStore.user.authenticationStatus==1||authStore.user.authenticationStatus==3){
+                    notify({ type: "error", text: authStore.user.authenticationStatus==1?"已认证":"认证中"+"，您已提交认证请勿重复提交" });
+                    loading.value = false;
+                    router.push({
+                        path: "/",
                     });
+                }else{
+                    axios
+                        .post("/iid/auth", submitBusinessForm)
+                        .then(({ data }) => {
+                            if (data.code == 0) {
+                            // notify({
+                            //     type: "success",
+                            //     text: "提交成功,请等待审核！",
+                            // });
+                                authStore.forceRefreshUser();
+                                authStore.clearIidFrom();
+                                show.value = true;
+                            // router.push({
+                            //     path: "/",
+                            // });
+                            } else {
+                                showError.value = true;
+                                authStore.clearIidFrom();
+                                notify({ type: "error", text: data.msg });
+                            }
+                        })
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        .catch((e) => {
+                            showError.value = true;
+                            authStore.clearIidFrom();
+                           
+                        })
+                        .finally(() => {
+                            loading.value = false;
+                            (businessFormRef.value as FormInstance).clearValidate();
+                        });
+                }
+
             } else {
                 console.log(`output->error`);
                 return false;
@@ -678,45 +756,63 @@ const submitForm = async () => {
                     iid: iidFrom.value.iidDidForm.iid,
                     publicKey: iidFrom.value.iidDidForm.publicKey,
                     authenticationType: "101",
-                    realName: encrypt(
-            (iidFrom.value.poesonalForm as PeosonalForm).realName as string
-                    ),
-                    idNumber: encrypt(
-            (iidFrom.value.poesonalForm as PeosonalForm).idNumber as string
-                    ),
+                    realName: encrypt((iidFrom.value.poesonalForm as PeosonalForm).realName as string),
+                    idNumber: encrypt((iidFrom.value.poesonalForm as PeosonalForm).idNumber as string),
                     idPortrait: (iidFrom.value.poesonalForm as PeosonalForm).idPortrait,
                     idEmblem: (iidFrom.value.poesonalForm as PeosonalForm).idEmblem,
                 };
                 loading.value = true;
-                axios
-                    .post("/iid/activate", submitPeosonalForm)
-                    .then(({ data }) => {
-                        if (data.code == 0) {
-                            notify({
-                                type: "success",
-                                text: "提交成功,请等待审核！",
-                            });
-                            authStore.clearIidFrom();
-                            router.push({
-                                path: "/",
-                            });
-                        } else {
-                            notify({ type: "error", text: data.msg });
-                        }
-                    })
-                    .catch((e) => {
-                        notify({ type: "error", text: e });
-                    })
-                    .finally(() => {
-                        loading.value = false;
-                        (poesonalRuleFormRef.value as FormInstance).clearValidate();
+                if(authStore.user.authenticationStatus==1||authStore.user.authenticationStatus==3){
+                    notify({ type: "error", text: authStore.user.authenticationStatus==1?"已认证":"认证中"+"，您已提交认证请勿重复提交" });
+                    loading.value = false;
+                    router.push({
+                        path: "/",
                     });
+                }else{
+                    axios
+                        .post("/iid/auth", submitPeosonalForm)
+                        .then(({ data }) => {
+                            if (data.code == 0) {
+                            // notify({
+                            //     type: "success",
+                            //     text: "提交成功,请等待审核！",
+                            // });
+                                authStore.forceRefreshUser();
+                                authStore.clearIidFrom();
+                                show.value = true;
+                            // router.push({
+                            //     path: "/",
+                            // });
+                            } else {
+                                showError.value = true;
+                                authStore.clearIidFrom();
+                                notify({ type: "error", text: data.msg });
+                            }
+                        })
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        .catch((e) => {
+                            showError.value = true;
+                            authStore.clearIidFrom();
+                        })
+                        .finally(() => {
+                            loading.value = false;
+                            (poesonalRuleFormRef.value as FormInstance).clearValidate();
+                        });
+                }
+                
             } else {
                 console.log(`output->error`);
                 return false;
             }
         });
     }
+};
+const handlerConfirm=()=>{
+    show.value=false;
+    showError.value=false;
+    router.push({
+        path: "/",
+    });
 };
 </script>
 
@@ -726,6 +822,14 @@ const submitForm = async () => {
   ::v-deep(.el-upload-dragger){
     height: 100%;
   }
+  ::v-deep(.el-icon--close-tip){
+    display: none !important;
+  }
 } 
+.uploadImgDisabled{
+  ::v-deep(.el-upload--picture-card){
+    display: none;
+  }
+}
 </style>
 

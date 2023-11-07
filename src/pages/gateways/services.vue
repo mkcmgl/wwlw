@@ -33,6 +33,7 @@
         :key="activeNode"
         v-if="
             Object.keys(nodeData).length
+            && Object.keys(networkInfo).length
         ">
 
         <div
@@ -67,7 +68,7 @@
                         w-1/4
                     "
                     label="内存占用"
-                    :value="nodeData.memoryUsage.used"/>
+                    :value="nodeData.memoryUsage.usage"/>
 
                 <panel
                     class="
@@ -81,6 +82,7 @@
                         w-1/4
                     "
                     label="平均上行网络"
+                    :max="1"
                     :value="networkInfo.avgRxPercent"/>
 
             </div>

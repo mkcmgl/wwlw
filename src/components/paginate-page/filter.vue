@@ -42,6 +42,38 @@
                         'no-emoji'
                     ]"/>
 
+                <i-input
+                    class="
+                        w-[calc(100%-100px)]
+                    "
+                    v-else-if="filter?.type === 'number'"
+                    type="number"
+                    :name="key"
+                    :attr="filter.label"
+                    v-bind="filter.attrs"
+                    :placeholder="`请输入${filter.label}`"
+                    v-model="form[key]"
+                    v-model:error="error[key]"
+                    :rules="[
+                        'number',
+                    ]"/>
+
+                <i-input
+                     class="
+                        w-[calc(100%-100px)]
+                    "
+                    v-else-if="filter?.type === 'input-max-rule'"
+                    :name="key"
+                    :attr="filter.label"
+                    :placeholder="`请输入${filter.placeholder}`"
+                    v-model="form[key]"
+                    v-model:error="error[key]"
+                    :max="100"
+                    :rules="[
+                        'no-emoji'
+                    ]"/>
+
+
                 <i-single-select
                     class="
                         w-[calc(100%-100px)]
@@ -211,7 +243,7 @@ const objectEmptyAttrFilter = (obj: Record<string,unknown>) => {
 const queryInUrl = computed(() => {
     return {
         ...initialForm,
-        ...omit(route.query, ['pageSize', 'pageNum']),
+        ...omit(route.query, ['pageSize', 'pageNo']),
     };
 });
 

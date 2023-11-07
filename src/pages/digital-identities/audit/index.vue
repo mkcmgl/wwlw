@@ -5,16 +5,20 @@
     api="iid/reviewList"
     api-method="POST"
     :thead="[
-      '账号编号',
+      '账号',
       '数字身份标识',
-      '角色名称/真实姓名',
+      '机构名称/真实姓名',
       '认证类型',
       '实名认证状态',
       '审核时间',
       '操作',
     ]"
     :filters="{
-      username: '用户名',
+      username: {
+        type: 'input-max-rule',
+        placeholder: '账号',
+        label: '账号'
+      },
       authenticationType: {
         type: 'single-select',
         label: '认证类型',
@@ -28,6 +32,17 @@
             label: '企业认证',
           },
         ],
+      },
+      orgName: {
+        type: 'input-max-rule',
+        placeholder: '机构名称',
+        label: '机构名称',
+      },
+      review: {
+        type: 'datetime-period',
+        label: '审核时间',
+        start: 'reviewStartTime',
+        end: 'reviewEndTime',
       },
       authenticationStatus: {
         type: 'single-select',
@@ -48,20 +63,23 @@
           },
         ],
       },
-      orgName: '机构名称',
-      realName: '真实姓名',
+      realName: {
+        type: 'input-max-rule',
+        placeholder: '真实姓名',
+        label: '真实姓名',
+      }
     }"
   >
     <template #tr="{ singleData }">
       <tr>
         <td>
-          {{ (singleData as Member).authenticationId }}
+          {{ decrypt((singleData as Member).username) }}
         </td>
         <td>
           {{ (singleData as Member).iid }}
         </td>
         <td>
-          {{ decrypt((singleData as Member).orgName|| (singleData as Member).realName )}}
+          {{ (singleData as Member).orgName ? decryptByDES((singleData as Member).orgName) : decrypt((singleData as Member).realName) }}
         </td>
         <td>
           {{ MemberAuthenticationType[(singleData as Member).authenticationType as 101 | 102] }}
@@ -94,7 +112,7 @@
 import PageTitle from "~/components/page-title.vue";
 import PaginatePage from "~/components/paginate-page/index.vue";
 import {parseTime } from "~/utils/tool";
-import { decrypt } from "~/utils/encrypt";
+import { decrypt, decryptByDES, } from "~/utils/encrypt";
 
 enum MemberAuthenticationStatus {
   "未认证" = 0,
@@ -111,7 +129,7 @@ type Member = {
   id: string;
   userId: string;
   iid: string;
-
+  username: string;
   authenticationId: string;
   orgName: string;
   authenticationType: 101 | 102;

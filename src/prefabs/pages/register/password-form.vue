@@ -14,7 +14,7 @@
         </i-input>
 
         <i-input v-model="form.password" v-model:error="error.password" name="password" type="password"
-            placeholder="请输入登录密码，6-20字符，需包含数字、字母，区分大小写" attr="密码" :rules="['required', 'password']" theme="auth-page">
+            placeholder="请输入登录密码，8-20字符，需包含数字、大小写字母和特殊符号" attr="密码" :rules="['required', 'password']" theme="auth-page">
             <template #icon>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
                     <g transform="translate(-1302 -468)">

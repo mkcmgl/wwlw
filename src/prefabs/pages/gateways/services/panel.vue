@@ -76,7 +76,7 @@ const loadPanel = () => {
                 data: [
                     {
                         // 保留 2 位小数
-                        value: props.value.toFixed(2),
+                        value: props.value,
                         name: props.label
                     }
                 ],

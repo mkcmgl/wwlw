@@ -18,3 +18,22 @@ export enum MessageTypes {
     '平台通知' = 4,
     '其他类型' = 5
 }
+
+export type NotifyMessage = {
+    createTieme: number;
+    id: number;
+    readStatus: boolean;
+    readTime: number;
+    templateCode: number;
+    templateContent: string;
+    templateId: number;
+    templateNickname: string;
+    templateParams: {
+        name: string;
+        did: string;
+        time: string;
+    };
+    templateType: number;
+    userId: number;
+    userType: number;
+}

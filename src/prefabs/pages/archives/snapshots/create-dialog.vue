@@ -434,6 +434,16 @@ const error = ref({
     content: '',
 });
 
+watch(
+    () => retentionDayType.value,
+    (value) => {
+        if (value === 'auto') {
+            form.value.retentionDay = '';
+            error.value.retentionDay = '';
+        }
+    }
+);
+
 const loading = ref(false);
 
 import axios from '~/plugins/axios';
@@ -456,6 +466,10 @@ const storeSnapshot = () => {
         // 快照周期为每月，今天的日期
         periodDay = new Date().getDate();
     }
+
+    formData.retentionDay = retentionDayType.value === 'auto'
+        ? '0'
+        : formData.retentionDay;
 
     axios.post(`/archive/snapshot/create`, {
         ...formData,

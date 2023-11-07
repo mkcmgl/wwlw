@@ -47,15 +47,15 @@
                         label: '授权加密',
                         value: '1',
                     },
-                    {
-                        label: '虚拟通道',
-                        value: '2',
-                    },
                 ],
             },
-
-            channelId: '虚拟通道ID',
-            blockHeight: '区块高度',
+            tx: {
+                type: 'datetime-period',
+                label: '交易时间',
+                start: 'startTxTime',
+                end: 'endTxTime',
+            },
+            
         }">
 
         <template

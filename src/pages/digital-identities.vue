@@ -42,29 +42,29 @@ const {
 const authStore = useAuthStore();
 
 const sidebarItems = computed(() => {
-    let Identity=
-        {
-            label: `
-                    <img
-                        class='
-                            mr-2
-                        '
-                        src='${__DIGITAL_IDENTITIES_ICON__}'/>
-                    数字身份
-                `,
-            links: [
-                {
-                    label: '我的数字身份',
-                    route: {
-                        name: 'digital-identities/mine'
-                    }
-                },
+    let identity= {
+        label: `
+                <img
+                    class='
+                        mr-2
+                    '
+                    src='${__DIGITAL_IDENTITIES_ICON__}'/>
+                数字身份
+            `,
+        links: [
+            {
+                label: '我的数字身份',
+                route: {
+                    name: 'digital-identities/mine'
+                }
+            },
 
-            ]
-        };
-    if (authStore.user.roles.map(role => role.code).includes('super_admin')) {
-        Identity.links=[
-            ...Identity.links,
+        ]
+    };
+    
+    if (authStore.user?.roles.map(role => role.code).includes('super_admin')) {
+        identity.links=[
+            ...identity.links,
             {
                 label: '实名认证审核',
                 route: {
@@ -75,12 +75,13 @@ const sidebarItems = computed(() => {
     }
 
     let items = [
-        Identity
+        identity
     ];
 
-    console.log();
-
-    if (authStore.user.roles.map(role => role.code).includes('manager')) {
+    if (
+        authStore.isVerified
+        && !authStore.isPersonUser
+    ) {
         items = [
             ...items,
             {
@@ -124,7 +125,7 @@ const sidebarItems = computed(() => {
     };
 
 
-    if (authStore.user.roles.map(role => role.code).includes('super_admin')) {
+    if (authStore.user?.roles.map(role => role.code).includes('super_admin')) {
         messageItem.links = [
             ...messageItem.links,
             {

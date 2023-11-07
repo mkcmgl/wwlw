@@ -18,6 +18,10 @@ export type Filter =
         label: string,
         start: string,
         end: string,
+    }
+    | {
+        type: 'number',
+        label: string,
     };
 
 

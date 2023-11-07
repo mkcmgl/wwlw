@@ -15,7 +15,7 @@
                             (item, index) in thead
                         "
                         :class="{
-                            'listRightSticky': enableSticky && index === thead.length - 1,
+                            'listRightSticky bg-[#F6F8FD]': enableSticky && index === thead.length - 1,
                         }"
                         :key="index">
                         {{ item }}

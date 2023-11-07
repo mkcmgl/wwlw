@@ -11,12 +11,37 @@
             <button
                 class="
                     p-2 text-sm
-                    mx-2 rounded text-white tracking-widest clickable relative overflow-hidden linear-hover
+                    mx-2 rounded text-white tracking-widest clickable relative overflow-hidden
                 "
+                :class="[
+                    (deleteingSelected || selectedIds.length === 0)
+                        ? 'bg-slate-300 cursor-not-allowed'
+                        : ' bg-red-600',
+                ]"
+                @click="showDeleteAllConfirmDialog = true"
+                type="button"
+                :disabled="deleteingSelected || selectedIds.length === 0"
+                v-wave="!deleteingSelected && selectedIds.length > 0">
+                <i
+                    v-if="deleteingSelected"
+                    class="mdi mdi-loading mdi-spin mr-2"/>
+                删除选中
+            </button>
+
+            <button
+                class="
+                    p-2 text-sm
+                    mx-2 rounded text-white tracking-widest clickable relative overflow-hidden
+                "
+                :class="[
+                    (readingSelected || selectedIds.length === 0)
+                        ? 'bg-slate-300 ursor-not-allowed'
+                        : ' linear-hover',
+                ]"
                 @click="readSelected"
                 type="button"
-                :disabled="readingSelected"
-                v-wave>
+                :disabled="readingSelected || selectedIds.length === 0"
+                v-wave="!readingSelected && selectedIds.length > 0">
                 <i
                     v-if="readingSelected"
                     class="mdi mdi-loading mdi-spin mr-2"/>
@@ -47,7 +72,7 @@
         ref="paginatePage"
         api="/notify-message/my-page"
         :filters="{
-            // templateContent: '消息内容',
+            templateContent: '消息内容',
             readStatus: {
                 type: 'single-select',
                 label: '是否已读',
@@ -114,7 +139,9 @@
                     阅读时间
                 </th>
                 <th
-                    class="listRightSticky">
+                    class="
+                        listRightSticky bg-[#F6F8FD]
+                    ">
                     操作
                 </th>
             </tr>
@@ -131,6 +158,65 @@
 
     </paginate-page>
 
+    <custom-dialog
+        v-model:show="showDeleteAllConfirmDialog">
+        
+        <template
+            #title>
+            确认删除选中的消息？
+        </template>
+        
+        <form
+            @submit.prevent="deleteSelected"
+            class="
+                -mx-2 text-right
+            ">
+
+            <button
+                class="
+                    mx-2
+                    p-2.5
+                    w-32 rounded
+                    border-2
+                    clickable relative
+                    overflow-hidden
+                "
+                @click="showDeleteAllConfirmDialog = false"
+                type="reset"
+                :disabled="deleteingSelected"
+                v-wave="!deleteingSelected">
+                取消
+            </button>
+
+            <button
+                class="
+                    mx-2
+                    p-2.5
+                    w-32 rounded
+                    text-white
+                    clickable relative
+                    overflow-hidden
+                "
+                :class="[
+                    deleteingSelected
+                        ? 'cursor-not-allowed backdrop-grayscale'
+                        : 'bg-red-500'
+                ]"
+                type="submit"
+                :disabled="deleteingSelected"
+                v-wave="!deleteingSelected">
+                <i
+                    v-if="deleteingSelected"
+                    class="
+                        mdi mdi-loading mdi-spin mr-2
+                    "></i>
+                确定删除
+            </button>
+            
+        </form>
+
+    </custom-dialog>
+
 </template>
 
 <script lang="ts" setup>
@@ -140,6 +226,7 @@ import PaginatePage from '~/components/paginate-page/index.vue';
 import MessageTr from '~/prefabs/pages/digital-identities/messages/tr.vue';
 
 import CustomCheckbox from '~/components/checkbox.vue';
+import CustomDialog from '~/components/dialog.vue';
 
 import {
     type Message,
@@ -216,16 +303,6 @@ const readingSelected = ref(false);
 
 const readSelected = () => {
 
-
-    if (selectedIds.value.length === 0) {
-        notify({
-            title: '请先选择消息',
-            type: 'error',
-        });
-        return;
-    }
-
-
     readingSelected.value = true;
     axios.put(`/notify-message/update-read?ids=${selectedIds.value.join(',')}`)
         .then(() => {
@@ -241,6 +318,31 @@ const readSelected = () => {
         })
         .finally(() => {
             readingSelected.value = false;
+        });
+};
+
+const showDeleteAllConfirmDialog = ref(false);
+
+const deleteingSelected = ref(false);
+
+const deleteSelected = () => {
+    
+    deleteingSelected.value = true;
+
+    axios.put(`/notify-message/deleteMessage?ids=${selectedIds.value.join(',')}`)
+        .then(() => {
+
+            notify({
+                title: '删除成功',
+                type: 'success',
+            });
+
+            updateIsSelectAll(false);
+
+            refreshData();
+        })
+        .finally(() => {
+            deleteingSelected.value = false;
         });
 };
 

@@ -27,11 +27,11 @@
                     clickable hoverable relative
                 "
 				@click.prevent="
-					pageNum === 1 ? false : changePage(pageNum === 1 ? 1 : pageNum - 1)
+					pageNo === 1 ? false : changePage(pageNo === 1 ? 1 : pageNo - 1)
 				"
-				:href="router.resolve(getRouteFromPage(pageNum === 1 ? 1 : pageNum - 1)).href"
+				:href="router.resolve(getRouteFromPage(pageNo === 1 ? 1 : pageNo - 1)).href"
 				title="上一页"
-				v-wave="pageNum !== 1">
+				v-wave="pageNo !== 1">
 				<i
 					class="mdi mdi-arrow-left"></i>
 			</a>
@@ -44,7 +44,7 @@
 					class="select-none px-2"
 					v-if="
 						index === (length - 2) &&
-						pageNum < (length - 4)
+						pageNo < (length - 4)
 					">
 					...
 				</span>
@@ -56,8 +56,8 @@
 					:href="router.resolve(getRouteFromPage(index)).href"
 					@click.prevent="changePage(index)"
 					:class="{
-						'linear-hover text-white': index === pageNum,
-						'hoverable': index !== pageNum
+						'linear-hover text-white': index === pageNo,
+						'hoverable': index !== pageNo
 					}"
 					:style="{
 						'font-size': `${Math.pow(1.2, (-1 * index.toString().length) + 1) * 100}%`
@@ -70,7 +70,7 @@
 					class="select-none px-2"
 					v-if="
 						index === 3 &&
-						pageNum > 5
+						pageNo > 5
 					">
 					...
 				</span>
@@ -82,11 +82,11 @@
                     clickable hoverable relative
                 "
 				@click.prevent="
-					pageNum === length ? false : changePage(pageNum === length ? length : pageNum + 1)
+					pageNo === length ? false : changePage(pageNo === length ? length : pageNo + 1)
 				"
-				:href="router.resolve(getRouteFromPage(pageNum === length ? length : pageNum + 1)).href"
+				:href="router.resolve(getRouteFromPage(pageNo === length ? length : pageNo + 1)).href"
 				title="下一页"
-				v-wave="pageNum !== length">
+				v-wave="pageNo !== length">
 				<i
 					class="mdi mdi-arrow-right"></i>
 			</a>
@@ -103,8 +103,8 @@
 				step="1"
 				:min="1"
 				:max="length"
-				ref="pageNumInput"
-				:value="pageNum"
+				ref="pageNoInput"
+				:value="pageNo"
 				@keydown.enter="changePageByInputting"/>
 			页
 		</form>
@@ -135,8 +135,8 @@ const route = useRoute();
 const router = useRouter();
 
 
-const pageNum = computed(() => {
-    return Math.ceil(parseInt(route.query?.pageNum as string) || 1); 
+const pageNo = computed(() => {
+    return Math.ceil(parseInt(route.query?.pageNo as string) || 1); 
 });
 
 const pageSize = computed(() => {
@@ -154,30 +154,30 @@ const pageIndexArray = computed(() => {
         .filter(v => {
             return v < 4 ||
                 (length.value - v) < 3 ||
-                Math.abs(v - pageNum.value) < 2;
+                Math.abs(v - pageNo.value) < 2;
         });	
 });
 
-const pageNumInput = ref<HTMLInputElement|null>();
+const pageNoInput = ref<HTMLInputElement|null>();
 
 const changePageByInputting = () => {
-    const target = parseInt((pageNumInput.value as HTMLInputElement).value.trim());
+    const target = parseInt((pageNoInput.value as HTMLInputElement).value.trim());
     changePage(target as number);
 };
 
-const getRouteFromPage = (pageNum: number) => {
+const getRouteFromPage = (pageNo: number) => {
     
     let query = {
         ...route.query
     } as {
-        pageNum?: number;
+        pageNo?: number;
     };
 
-    if (pageNum === 1) {
-        delete query.pageNum;
+    if (pageNo === 1) {
+        delete query.pageNo;
     }
     else {
-        query.pageNum = pageNum;
+        query.pageNo = pageNo;
     }
 
     return {
@@ -189,37 +189,37 @@ const getRouteFromPage = (pageNum: number) => {
 
 
 
-const changePage = (pageNum: number) => {
+const changePage = (pageNo: number) => {
     
     if (
-        pageNumInput.value?.value.trim().length === 0
+        pageNoInput.value?.value.trim().length === 0
     ) {
         return false;
     }
 
-    pageNum = pageNum || 1;
+    pageNo = pageNo || 1;
 
-    if (isNaN(pageNum)) {
-        pageNum = 1;
+    if (isNaN(pageNo)) {
+        pageNo = 1;
     }
-    if (pageNum <= 0) {
-        pageNum = 1;
+    if (pageNo <= 0) {
+        pageNo = 1;
     }
-    if (pageNum > length.value) {
-        pageNum = length.value;
+    if (pageNo > length.value) {
+        pageNo = length.value;
     }
 
-    // pageNumInput.value?.value = pageNum;
+    // pageNoInput.value?.value = pageNo;
 
     let query = {
         ...route.query,
-        pageNum: pageNum
+        pageNo: pageNo
     } as {
-        pageNum?: number;
+        pageNo?: number;
     };
 
-    if (pageNum === 1) {
-        delete query.pageNum;
+    if (pageNo === 1) {
+        delete query.pageNo;
     }
 
     router.push({

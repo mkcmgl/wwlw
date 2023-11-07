@@ -29,12 +29,23 @@
             {{ snapshot.retentionDay }}
         </td>
         <td>
-            {{ snapshot.content }}
+            <span
+                class="
+                    block
+                    truncate
+                    max-w-[200px]
+                    line-clamp-2
+                ">
+                {{ snapshot.content }}
+            </span>
         </td>
         <td>
-            {{ snapshot.createTime }}
+            {{ parseTime(snapshot.createTime) }}
         </td>
-        <td>
+        <td
+            class="
+                listRightSticky bg-white
+            ">
             <button
                 class="
                     text-blue-600
@@ -48,7 +59,10 @@
 
 
     <i-dialog
-        v-model:show="showDetailDialog">
+        v-model:show="showDetailDialog"
+        class="
+            w-[420px]
+        ">
 
         <template
             #title>
@@ -93,7 +107,7 @@
 
             <span
                 class="
-                    break-all
+                    break-all w-[calc(100%-125px)]
                 ">
                 {{ snapshot[key] }}
             </span>
@@ -158,6 +172,10 @@ import {
     SnapshotPeriodType,
     Snapshot,
 } from '~/types/archive/snapshot';
+
+import {
+    parseTime
+} from '~/utils/tool';
 
 import IDialog from '~/components/dialog.vue';
 

@@ -2,7 +2,11 @@
     <page-title
         title="总览"/>
 
-    <digital-id-info-card/>
+    <digital-id-info-card
+        v-if="
+            !authStore.isPersonUser
+            && authStore.isVerified
+        "/>
 </template>
 
 <script lang="ts" setup>

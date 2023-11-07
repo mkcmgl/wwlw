@@ -10,9 +10,9 @@ import {
     notify
 } from '~/plugins/notify';
 
-// 实名认证
+// 数字身份
 
-export const verified = async (
+export const iid = async (
     to: RouteLocationNormalized,
     from,
     next
@@ -21,7 +21,7 @@ export const verified = async (
     await useAuthStore().refreshUser();
 
     if (
-        useAuthStore().isVerified
+        useAuthStore().hasIid
         || useAuthStore().isAdmin
     ) {
         next();
@@ -29,12 +29,12 @@ export const verified = async (
     else {
 
         notify({
-            title: '请先完成实名认证',
+            title: '请先激活数字身份',
             type: 'warning'
         });
 
         next({
-            name: 'digital-identities/authentication',
+            name: 'digital-identities/activate',
         });
     }
 };

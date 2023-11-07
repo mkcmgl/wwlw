@@ -116,6 +116,7 @@ const {
     hasError,
     hasTip,
     clearValue,
+    manualValidate,
 } = useInput(props, emits);
 
 const {
@@ -130,7 +131,8 @@ const handleBlur = (e: FocusEvent) => {
 };
 
 defineExpose({
-    refresh
+    refresh,
+    manualValidate
 });
 
 </script>

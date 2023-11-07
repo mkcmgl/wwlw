@@ -54,7 +54,8 @@ import {
 } from 'vue-router';
 
 import {
-    omit
+    omit,
+    isEqual,
 } from 'lodash-es';
 
 import type {
@@ -66,7 +67,7 @@ import axios from '~/plugins/axios';
 import PaginatePageFilter from './filter.vue';
 import PaginatePageList from './list.vue';
 import PaginatePageFooter from './footer.vue';
-import  encrypt  from "~/utils/encrypt";
+import { encrypt, encryptByDES } from "~/utils/encrypt";
 
 defineOptions({
     inheritAttrs: false,
@@ -95,7 +96,7 @@ const route = useRoute();
 
 const computedApiParams = computed(() => {
 
-    let otherParams = omit(route.query, ['pageSize', 'pageNum']) as Record<string, string>;
+    let otherParams = omit(route.query, ['pageSize', 'pageNo']) as Record<string, string>;
 
     Object.keys(props.filters).map((key) => {
         if (props.filters[key]?.type === 'datetime-period') {
@@ -108,14 +109,14 @@ const computedApiParams = computed(() => {
         otherParams.username= encrypt(otherParams.username);
     }
     if(otherParams.orgName){
-        otherParams.orgName= encrypt(otherParams.orgName);
+        otherParams.orgName= encryptByDES(otherParams.orgName);
     }    
     if(otherParams.realName){
         otherParams.realName= encrypt(otherParams.realName);
     }
     return {
         pageSize: parseInt(route.query.pageSize as string) || 10,
-        pageNum: parseInt(route.query.pageNum as string) || 1,
+        pageNo: parseInt(route.query.pageNo as string) || 1,
         ...otherParams,
     };
 });
@@ -154,9 +155,18 @@ onBeforeMount(async () => {
 });
 
 watch(
-    () => route.query,
-    async () => {
-        await refreshData();
+    () => {
+        return {
+            ...route
+        };
+    },
+    async (value, old) => {
+        if (
+            isEqual(value.query, old.query) === false
+            && value.path === old.path
+        ) {
+            await refreshData();
+        }
     },
 );
 

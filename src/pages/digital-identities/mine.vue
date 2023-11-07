@@ -34,7 +34,7 @@
 
                 <span
                     class="
-                        break-all
+                        break-all w-[calc(100%-125px)]
                     ">
                     {{ iid?.iid }}
                 </span>
@@ -55,7 +55,7 @@
 
                 <span
                     class="
-                        break-all
+                        break-all w-[calc(100%-125px)]
                     ">
                     {{ iid?.publicKey }}
                 </span>
@@ -96,6 +96,15 @@
                 ">
                 {{ verificationStatusString }}
             </span>
+
+            <button
+                    class="
+                ml-2 text-blue-600 hover:underline
+            "
+                type="button"
+                @click="handlerVerificationStatus">
+                {{ handlerVerificationStatusString }}
+            </button>
 
         </div>
 
@@ -245,12 +254,15 @@ import {
 import {
     type Iid,
     AuthenticationStatus,
+    AuthenticationStatusType
 } from '~/types/auth.d';
 
 import {
     useAuthStore
 } from '~/store/auth';
-
+import {
+    useRouter
+} from 'vue-router';
 const UpdatePasswordDialog = defineAsyncComponent(() => import('~/prefabs/pages/digital-identities/mine/update-password-dialog.vue'));
 
 defineOptions({
@@ -258,7 +270,9 @@ defineOptions({
 });
 
 const iid: Ref<Iid|null> = ref(null);
-
+onBeforeMount(() => {
+    iid.value = iidData.value;
+});
 onBeforeMount(async () => {
     const { data } = await axios.get('/iid/getInfo');
     iid.value = data.data;
@@ -269,11 +283,38 @@ const verificationStatusString = computed(() => {
         ? AuthenticationStatus[iid.value?.authenticationStatus]
         : '';
 });
-
+const handlerVerificationStatusString = computed(() => {
+    return iid.value?.authenticationStatus
+        ? AuthenticationStatusType[iid.value?.authenticationStatus]
+        : '';
+});
+const router = useRouter();
+const handlerVerificationStatus = () => {
+    if (iid.value?.authenticationStatus == 0) {
+        router.push({
+            path: "activate",
+        });
+    }
+    if (iid.value?.authenticationStatus == 1) {
+        router.push({
+            path: "mine/detail",
+        });
+    }
+    if (iid.value?.authenticationStatus == 2) {
+        router.push({
+            path: "authentication",
+        });
+    }
+    if (iid.value?.authenticationStatus == 3) {
+        router.push({
+            path: "mine/detail",
+        });
+    }
+};
 const authStore = useAuthStore();
 
 const showUpdatePasswordDialog = ref(false);
-
+const iidData = computed(() => authStore.iid);
 const user = computed(() => authStore.user);
 
 </script>

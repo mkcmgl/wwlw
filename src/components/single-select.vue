@@ -6,6 +6,18 @@
 
             -webkit-appearance: none;
 
+            // select arrow style
+            &:not(.has-value) {
+                background: transparent;
+                background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg'><path d='M904.533333 311.466667c-17.066667-17.066667-42.666667-17.066667-59.733333 0L512 644.266667 179.2 311.466667c-17.066667-17.066667-42.666667-17.066667-59.733333 0-17.066667 17.066667-17.066667 42.666667 0 59.733333l362.666666 362.666667c8.533333 8.533333 19.2 12.8 29.866667 12.8s21.333333-4.266667 29.866667-12.8l362.666666-362.666667c17.066667-17.066667 17.066667-42.666667 0-59.733333z'></path></svg>");
+                background-repeat: no-repeat;
+                background-position-x: calc(100% - 12px);
+                background-position-y: 50%;
+                background-size: 12px 12px;
+            }
+
+
+
             &::-ms-expand {
                 display: none;
             }
@@ -52,6 +64,7 @@
                     'border-red-400': hasError,
                     'border-slate-200': !hasError,
                     'text-slate-400': !computedValue,
+                    'has-value': !!computedValue,
                 }"
                 :disabled="disabled"
                 v-bind="innerAttrs"
@@ -83,12 +96,13 @@
             </select>
 
             <span
-                class="absolute w-10 h-10 right-1 top-1/2 -translate-y-1/2 flex items-center justify-center icon-wrapper fill-slate-400">
+                class="absolute w-10 h-10 right-1 top-1/2 -translate-y-1/2 flex items-center justify-center icon-wrapper fill-slate-400"
+                v-if="!!computedValue">
                 
                 <button
                     class="w-5 h-5"
                     aria-label="清空选择框"
-                    v-if="!!computedValue"
+                    
                     type="button"
                     @click="computedValue = ''"
                     :disabled="disabled">
@@ -100,21 +114,6 @@
                         <path
                             d="M73,64a9,9,0,1,0,9,9A9.006,9.006,0,0,0,73,64Zm4.789,12.889-.916.916L73,73.916l-3.889,3.873-.916-.916L72.1,73l-3.889-3.889.916-.916L73,72.1l3.889-3.889.916.916L73.916,73Z"
                             transform="translate(-64 -64)"/>
-                    </svg>
-                </button>
-                
-                <button
-                    class="w-3 h-3"
-                    aria-label="选择"
-                    v-else
-                    :disabled="disabled"
-                    type="button">
-                    <svg
-                        viewBox="0 0 1024 1024"
-                        version="1.1"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M904.533333 311.466667c-17.066667-17.066667-42.666667-17.066667-59.733333 0L512 644.266667 179.2 311.466667c-17.066667-17.066667-42.666667-17.066667-59.733333 0-17.066667 17.066667-17.066667 42.666667 0 59.733333l362.666666 362.666667c8.533333 8.533333 19.2 12.8 29.866667 12.8s21.333333-4.266667 29.866667-12.8l362.666666-362.666667c17.066667-17.066667 17.066667-42.666667 0-59.733333z"></path>
                     </svg>
                 </button>
 

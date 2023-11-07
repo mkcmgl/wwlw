@@ -1,18 +1,30 @@
 <template>
-    <custom-dialog v-model:show="computedShow">
+    <button v-if="authenticationStatus == '0' || authenticationStatus == '3'
+        " type="button" class="
+            clickable hoverable
+            linear-hover
+            text-white
+            p-2 rounded text-sm
+        " v-wave @click="showDetailDialog = true" v-bind="$attrs">
+        审核
+    </button>
+
+    <custom-dialog v-model:show="showDetailDialog" @close="handlerClose">
 
         <template #title>
             审核意见
         </template>
         <template v-slot="{ close }">
+
+
             <el-form-item label="审核意见" prop="radio">
-                <el-radio-group v-model="reviewForm.radio" class="ml-4">
+                <el-radio-group v-model="reviewForm.radio" class="ml-4" @change="handlerTypeChange">
                     <el-radio label="1" size="large">通过</el-radio>
                     <el-radio label="2" size="large">驳回</el-radio>
                 </el-radio-group>
             </el-form-item>
-            
-            <el-form :model="reviewForm" :rules="reviewRules">
+
+            <el-form ref="reviewFormRef" :model="reviewForm" :rules="reviewRules">
                 <div v-show="reviewForm.radio == '2'">
                     <el-form-item label="驳回原因" prop="reason">
                         <el-input v-model="reviewForm.reason" type="textarea" />
@@ -38,7 +50,6 @@
             <form class="
                     -mx-2 text-right
                 " @submit.prevent="submitReview">
-
                 <button class="
                         mx-2
                         p-2.5
@@ -84,47 +95,22 @@
 import CustomDialog from '~/components/dialog.vue';
 import axios from '~/plugins/axios';
 import { reactive } from 'vue';
-import type { FormRules } from 'element-plus';
+import type { FormInstance, FormRules } from 'element-plus';
 import {
     useRouter
 } from 'vue-router';
 import {
-    type Ref,
     ref,
-    computed,
 } from 'vue';
 import { notify } from "@kyvg/vue3-notification";
-
+const showDetailDialog = ref(false);
 const props = defineProps<{
-    show: boolean;
     companyId: string;
+    authenticationStatus: string;
 }>();
 
-const emits = defineEmits([
-    'update:show'
-]);
 
-const computedShow = computed({
-    get() {
-        return props.show;
-    },
-    set(val) {
-        emits('update:show', val);
-    }
-});
-
-type CompanyDetail = {
-    username: string;
-    initialPassword: string;
-    iid: string;
-    mobile: string;
-    status: 0 | 1;
-    roleName: string;
-    authorize: string;
-    remark: string;
-};
-
-const detail = ref({}) as Ref<CompanyDetail>;
+const reviewFormRef = ref<FormInstance>();
 
 interface ReviewForm {
     radio: string;
@@ -162,28 +148,68 @@ const reviewRules = reactive<FormRules<ReviewForm>>({
 const loading = ref(false);
 const router = useRouter();
 
-const submitReview = () => {
-    loading.value = true;
-    axios.post('/iid/review', {
-        authenticationId: props.companyId,
-        reviewStatus: reviewForm.radio,
-        reviewOpinion: reviewForm.radio == '2' ? reviewForm.reason : ''
-    }).then(({data}) => {
-        if (data.code == 0) {
-            notify({
-                type: "success",
-                text: "审核成功！",
-            });
-        }
-    }).catch((e) => { 
-        notify({ type: "error", text: e });
-    }).finally(() => { 
-        loading.value = false;
-        router.back();
-    });
+const handlerTypeChange = () => {
+    (reviewFormRef.value as FormInstance).resetFields();
+};
 
+const handlerClose = () => {
+    // (reviewFormRef.value as FormInstance).resetFields();
+    reviewForm.radio = '1';
+    reviewForm.reason = '';
 
 };
+
+const submitReview = () => {
+    loading.value = true;
+    if (reviewForm.radio == '1') {
+
+        axios.post('/iid/review', {
+            authenticationId: props.companyId,
+            reviewStatus: reviewForm.radio,
+        }).then(({ data }) => {
+            if (data.code == 0) {
+                notify({
+                    type: "success",
+                    text: "审核成功！",
+                });
+            }
+        }).catch((e) => {
+            notify({ type: "error", text: e });
+        }).finally(() => {
+            loading.value = false;
+        });
+        router.back();
+        loading.value = false;
+    } else {
+        (reviewFormRef.value as FormInstance).validate((valid) => {
+            if (valid) {
+                axios.post('/iid/review', {
+                    authenticationId: props.companyId,
+                    reviewStatus: reviewForm.radio,
+                    reviewOpinion: reviewForm.reason,
+                }).then(({ data }) => {
+                    if (data.code == 0) {
+                        notify({
+                            type: "success",
+                            text: "审核成功！",
+                        });
+                    }
+                }).catch((e) => {
+                    notify({ type: "error", text: e });
+                }).finally(() => {
+                    loading.value = false;
+                });
+
+                router.back();
+            } else {
+                return false;
+            }
+        });
+        loading.value = false;
+    }
+
+};
+
 </script>
 <style  scoped type="text/scss" >
 ::v-deep(.el-textarea__inner) {

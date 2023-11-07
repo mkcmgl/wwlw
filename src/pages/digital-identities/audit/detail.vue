@@ -1,17 +1,13 @@
 <template>
-  <page-title title="详情" />
+  <page-title title="详情" :back="true" >
+    <detail-dialog  
+        class="ml-auto" 
+        :companyId="companyId" 
+        :authenticationStatus="company.authenticationStatus"
+      />
+  </page-title>
+
   <div class="h-[calc(100vh-140px)] bg-[#fff] mx-4 overflow-y-scroll">
-    <button
-      v-if="
-        company.authenticationStatus == 0 || company.authenticationStatus == 3
-      "
-      type="submit"
-      class="float-right flex items-center justify-center py-2 w-[50px] mx-2 rounded text-white fill-white tracking-widest clickable relative overflow-hidden linear-hover"
-      v-wave
-      @click="showDetailDialog = true"
-    >
-      审核
-    </button>
     <div class="w-full h-full p-4">
       <span class="font-bold">数字身份信息</span>
       <div class="flex justify-between my-4 font-light">
@@ -58,7 +54,7 @@
         <div class="flex justify-between my-4 font-light">
           <div class="flex-1">
             <span class="mr-4">机构名称</span>
-            <span>{{ decrypt(company.orgName) }}</span>
+            <span>{{ decryptByDES(company.orgName) }}</span>
           </div>
           <div class="flex-1">
             <span class="mr-4">地址</span>
@@ -68,11 +64,11 @@
         <div class="flex justify-between my-4 font-light">
           <div class="flex-1">
             <span class="mr-4">详细地址</span>
-            <span>{{ decrypt(company.addressDetail) }}</span>
+            <span>{{ decryptByDES(company.addressDetail) }}</span>
           </div>
           <div class="flex-1">
             <span class="mr-4">联系人姓名</span>
-            <span>{{ decrypt(company.contactName) }}</span>
+            <span>{{ decryptByDES(company.contactName) }}</span>
           </div>
         </div>
         <div class="flex justify-between my-4 font-light">
@@ -128,7 +124,6 @@
       </div>
     </div>
 
-    <detail-dialog :companyId="companyId" v-model:show="showDetailDialog" />
     <el-dialog v-model="dialogVisible">
       <img w-full :src="dialogImageUrl" alt="营业执照" />
     </el-dialog>
@@ -141,7 +136,7 @@ import PageTitle from "~/components/page-title.vue";
 import DetailDialog from "./detail-dialog.vue";
 import { useRoute } from "vue-router";
 import { type Ref, ref, onBeforeMount } from "vue";
-import { decrypt } from "~/utils/encrypt";
+import { decrypt, decryptByDES } from "~/utils/encrypt";
 
 type Company = {
   username: string;
@@ -172,14 +167,13 @@ type Company = {
 const dialogVisible = ref(false);
 const dialogImageUrl = ref("");
 const company = ref({}) as Ref<Company>;
-const showDetailDialog = ref(false);
 const route = useRoute();
 const companyId = route.query.companyId as string;
 const loading = ref(false);
 onBeforeMount(async () => {
     loading.value = true;
-    const { data } = await axios.get(`/iid/getAuthDetail`, {
-        params: { authenticationId: String(companyId) },
+    const { data } = await axios.post(`/iid/getAuthDetail`, {
+        authenticationId: String(companyId)
     });
     if (data.code == 0) {
         company.value = data.data;

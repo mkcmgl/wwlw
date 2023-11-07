@@ -1,8 +1,13 @@
 <template>
-    <div v-if="user.authenticationStatus == 1">
+    <mine
+        v-if="user.authenticationStatus == 0" 
+        title="数字身份" 
+        :use-title-template="false"
+    />
+
+    <div v-else>
         <mine-details />
     </div>
-    <mine v-else title="数字身份" :use-title-template="false" />
 </template>
 
 <script lang="ts" setup>
